@@ -867,6 +867,58 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </div>
 </div>
 
+<script type="module">
+// ─── FIREBASE ────────────────────────────────────────────────────────────────
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, query, where }
+  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const _app = initializeApp({
+  apiKey: "AIzaSyDH1IwIGHvqMhGgKBA3gLK8DzR9fj-S6z8",
+  authDomain: "tiktok-manager-612d2.firebaseapp.com",
+  projectId: "tiktok-manager-612d2",
+  storageBucket: "tiktok-manager-612d2.firebasestorage.app",
+  messagingSenderId: "128182628003",
+  appId: "1:128182628003:web:4e3617f115480e17b31916"
+});
+const _db = getFirestore(_app);
+
+window._fb = {
+  async getProfiles() {
+    const snap = await getDocs(collection(_db, 'profiles'));
+    return snap.docs.map(d => d.data());
+  },
+  async saveProfile(p) {
+    await setDoc(doc(_db, 'profiles', p.id), p);
+  },
+  async deleteProfile(id) {
+    await deleteDoc(doc(_db, 'profiles', id));
+    const snap = await getDocs(query(collection(_db, 'accounts'), where('profileId', '==', id)));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+  },
+  async getAccounts(profileId) {
+    const snap = await getDocs(query(collection(_db, 'accounts'), where('profileId', '==', profileId)));
+    return snap.docs.map(d => d.data());
+  },
+  async saveAccount(a) {
+    await setDoc(doc(_db, 'accounts', a.id), a);
+  },
+  async deleteAccount(id) {
+    await deleteDoc(doc(_db, 'accounts', id));
+  },
+  async getAllData() {
+    const [pSnap, aSnap] = await Promise.all([
+      getDocs(collection(_db, 'profiles')),
+      getDocs(collection(_db, 'accounts'))
+    ]);
+    const profiles  = pSnap.docs.map(d => d.data());
+    const accounts  = aSnap.docs.map(d => d.data());
+    return profiles.map(p => ({ p, accounts: accounts.filter(a => a.profileId === p.id) }));
+  }
+};
+window.dispatchEvent(new Event('fbReady'));
+</script>
+
 <script>
 // ─── DATA ────────────────────────────────────────────────────────────────────
 let DB = [];
@@ -920,7 +972,8 @@ function initials(str) {
 // ─── PERSIST ─────────────────────────────────────────────────────────────────
 function persist() {
   if (!currentUser) return;
-  localStorage.setItem('tt_v2_' + currentUser.id, JSON.stringify(DB));
+  const pid = currentUser.id;
+  Promise.all(DB.map(a => window._fb.saveAccount({ ...a, profileId: pid }))).catch(console.error);
   renderAll();
 }
 
@@ -1396,6 +1449,7 @@ function deleteAcc(id) {
   const a = DB.find(x=>x.id===id);
   if(!a||!confirm(`Deletar "${a.name||a.email}"?`)) return;
   DB = DB.filter(x=>x.id!==id);
+  window._fb.deleteAccount(id).catch(console.error);
   if(panelId===id) closePanel();
   persist();
   toast('Conta removida.','success');
@@ -2073,24 +2127,21 @@ function dlRenderHistory() {
 }
 
 // ─── PROFILES ────────────────────────────────────────────────────────────────
-const PROF_KEY = 'tt_profiles';
 let currentUser = null;
 let _profLoginTarget = null;
 
-function getProfiles() { return JSON.parse(localStorage.getItem(PROF_KEY) || '[]'); }
-function saveProfiles(list) { localStorage.setItem(PROF_KEY, JSON.stringify(list)); }
-
-function loadSession() {
+async function loadSession() {
   const s = sessionStorage.getItem('tt_session');
   if (!s) return null;
   const { id } = JSON.parse(s);
-  return getProfiles().find(p => p.id === id) || null;
+  const profiles = await window._fb.getProfiles();
+  return profiles.find(p => p.id === id) || null;
 }
 
-function loginAs(profile) {
+async function loginAs(profile) {
   currentUser = profile;
   sessionStorage.setItem('tt_session', JSON.stringify({ id: profile.id }));
-  DB = JSON.parse(localStorage.getItem('tt_v2_' + profile.id) || '[]');
+  DB = await window._fb.getAccounts(profile.id);
   dlHistory = JSON.parse(localStorage.getItem('tt_dl_hist_' + profile.id) || '[]');
   document.getElementById('profile-screen').style.display = 'none';
   renderTopbarUser();
@@ -2105,7 +2156,7 @@ function logout() {
   DB = [];
   dlHistory = [];
   closeUserMenu();
-  renderProfileGrid();
+  renderProfileGrid().catch(console.error);
   document.getElementById('profile-screen').style.display = 'flex';
 }
 
@@ -2166,24 +2217,27 @@ function closeUserMenu() {
 
 function switchProfile() {
   closeUserMenu();
-  renderProfileGrid();
+  renderProfileGrid().catch(console.error);
   document.getElementById('profile-screen').style.display = 'flex';
 }
 
-function renderProfileGrid() {
-  const profiles = getProfiles();
+async function renderProfileGrid() {
   const grid = document.getElementById('profile-grid');
   if (!grid) return;
+  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--muted);font-size:13px">Carregando...</div>`;
+  const profiles = await window._fb.getProfiles();
   if (!profiles.length) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--muted);font-size:13px">
       Nenhum perfil criado ainda.<br/>Crie seu primeiro perfil abaixo.
     </div>`;
     return;
   }
-  grid.innerHTML = profiles.map(p => {
+  // Load account counts in parallel
+  const counts = await Promise.all(profiles.map(p => window._fb.getAccounts(p.id).then(a => a.length).catch(() => 0)));
+  grid.innerHTML = profiles.map((p, i) => {
     const av = avatarColor(p.name);
     const ini = initials(p.name);
-    const count = JSON.parse(localStorage.getItem('tt_v2_' + p.id) || '[]').length;
+    const count = counts[i];
     return `<div class="profile-card" onclick="selectProfile('${p.id}')">
       <div class="profile-avatar-lg" style="background:${av};color:#0d0d12">${ini}</div>
       <div class="profile-name-lg">${esc(p.name)}</div>
@@ -2193,8 +2247,9 @@ function renderProfileGrid() {
   }).join('');
 }
 
-function selectProfile(id) {
-  const p = getProfiles().find(x => x.id === id);
+async function selectProfile(id) {
+  const profiles = await window._fb.getProfiles();
+  const p = profiles.find(x => x.id === id);
   if (!p) return;
   if (p.password) {
     _profLoginTarget = p;
@@ -2210,11 +2265,11 @@ function selectProfile(id) {
     document.getElementById('prof-pw-modal').classList.add('open');
     setTimeout(() => document.getElementById('prof-pw-input').focus(), 80);
   } else {
-    loginAs(p);
+    await loginAs(p);
   }
 }
 
-function confirmProfLogin() {
+async function confirmProfLogin() {
   if (!_profLoginTarget) return;
   const pw = document.getElementById('prof-pw-input').value;
   if (pw !== _profLoginTarget.password) {
@@ -2224,7 +2279,7 @@ function confirmProfLogin() {
     return;
   }
   document.getElementById('prof-pw-modal').classList.remove('open');
-  loginAs(_profLoginTarget);
+  await loginAs(_profLoginTarget);
   _profLoginTarget = null;
 }
 
@@ -2250,7 +2305,7 @@ function profErr(msg) {
   el.style.display = 'block';
 }
 
-function createProfile() {
+async function createProfile() {
   const name  = document.getElementById('new-prof-name').value.trim();
   const email = document.getElementById('new-prof-email').value.trim();
   const pw    = document.getElementById('new-prof-pw').value;
@@ -2261,19 +2316,18 @@ function createProfile() {
   if (pw.length < 4) { profErr('Senha deve ter ao menos 4 caracteres.'); document.getElementById('new-prof-pw').focus(); return; }
   if (pw !== pw2) { profErr('As senhas não coincidem.'); document.getElementById('new-prof-pw2').focus(); return; }
 
-  const profiles = getProfiles();
+  const profiles = await window._fb.getProfiles();
   if (profiles.find(p => p.email === email)) { profErr('Já existe um perfil com esse email.'); return; }
 
   const newP = { id: uid(), name, email, password: pw, createdAt: new Date().toISOString() };
-  profiles.push(newP);
-  saveProfiles(profiles);
+  await window._fb.saveProfile(newP);
   document.getElementById('new-prof-modal').classList.remove('open');
-  loginAs(newP);
+  await loginAs(newP);
 }
 
 function openManageProfs() {
   closeUserMenu();
-  renderManageList();
+  renderManageList().catch(console.error);
   document.getElementById('manage-prof-modal').classList.add('open');
 }
 
@@ -2281,17 +2335,19 @@ function closeManageProfs() {
   document.getElementById('manage-prof-modal').classList.remove('open');
 }
 
-function renderManageList() {
-  const profiles = getProfiles();
+async function renderManageList() {
   const list = document.getElementById('manage-prof-list');
+  list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Carregando...</div>`;
+  const profiles = await window._fb.getProfiles();
   if (!profiles.length) {
     list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Nenhum perfil criado.</div>`;
     return;
   }
-  list.innerHTML = profiles.map(p => {
+  const counts = await Promise.all(profiles.map(p => window._fb.getAccounts(p.id).then(a => a.length).catch(() => 0)));
+  list.innerHTML = profiles.map((p, i) => {
     const av = avatarColor(p.name);
     const ini = initials(p.name);
-    const count = JSON.parse(localStorage.getItem('tt_v2_' + p.id) || '[]').length;
+    const count = counts[i];
     const isCurrent = currentUser && currentUser.id === p.id;
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:8px">
       <div style="width:32px;height:32px;border-radius:50%;background:${av};color:#0d0d12;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
@@ -2304,13 +2360,13 @@ function renderManageList() {
   }).join('');
 }
 
-function deleteProfile(id) {
-  const p = getProfiles().find(x => x.id === id);
+async function deleteProfile(id) {
+  const profiles = await window._fb.getProfiles();
+  const p = profiles.find(x => x.id === id);
   if (!p || !confirm(`Deletar perfil "${p.name}" e TODOS os dados?\nEsta ação não pode ser desfeita.`)) return;
-  localStorage.removeItem('tt_v2_' + id);
+  await window._fb.deleteProfile(id);
   localStorage.removeItem('tt_dl_hist_' + id);
-  saveProfiles(getProfiles().filter(x => x.id !== id));
-  renderManageList();
+  renderManageList().catch(console.error);
   toast(`Perfil "${p.name}" deletado.`, 'success');
 }
 
@@ -2367,25 +2423,23 @@ async function confirmAdminLogin() {
 }
 
 function openAdminPanel() {
-  renderAdminPanel();
   document.getElementById('admin-panel').classList.add('open');
+  renderAdminPanel().catch(console.error);
 }
 
 function closeAdminPanel() {
   document.getElementById('admin-panel').classList.remove('open');
 }
 
-function adminRefresh() {
-  renderAdminPanel();
+async function adminRefresh() {
+  await renderAdminPanel();
   toast('Dados atualizados.', 'success');
 }
 
-function renderAdminPanel() {
-  const profiles = getProfiles();
-  const allData = profiles.map(p => ({
-    p,
-    accounts: JSON.parse(localStorage.getItem('tt_v2_' + p.id) || '[]')
-  }));
+async function renderAdminPanel() {
+  document.getElementById('admin-stats').innerHTML = `<div style="color:var(--muted);font-size:13px">Carregando...</div>`;
+  document.getElementById('admin-users-list').innerHTML = '';
+  const allData = await window._fb.getAllData();
 
   const totalAccounts = allData.reduce((s, d) => s + d.accounts.length, 0);
   const totalAdsOn    = allData.reduce((s, d) => s + d.accounts.filter(a => a.status === 'adsOn').length, 0);
@@ -2399,13 +2453,13 @@ function renderAdminPanel() {
     </div>`;
 
   document.getElementById('admin-stats').innerHTML =
-    stat(profiles.length, 'Usuários', 'var(--teal)') +
+    stat(allData.length,  'Usuários', 'var(--teal)') +
     stat(totalAccounts,   'Contas TikTok', 'var(--text)') +
     stat(totalAdsOn,      'Ads ON', '#00e5a0') +
     stat(totalPronta,     'Prontas p/ Conv.', 'var(--green)') +
     stat(totalBanida,     'Banidas', 'var(--danger)');
 
-  if (!profiles.length) {
+  if (!allData.length) {
     document.getElementById('admin-users-list').innerHTML =
       `<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;background:var(--s1);border:1px solid var(--border);border-radius:12px">Nenhum usuário registrado ainda.</div>`;
     return;
@@ -2469,12 +2523,19 @@ function adminToggleUser(idx) {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 renderTutorial();
-const _savedSession = loadSession();
-if (_savedSession) {
-  loginAs(_savedSession);
-} else {
-  renderProfileGrid();
+// Show loading state until Firebase is ready
+document.getElementById('profile-grid').innerHTML =
+  `<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--muted);font-size:13px">Conectando...</div>`;
+async function _init() {
+  const _savedSession = await loadSession();
+  if (_savedSession) {
+    await loginAs(_savedSession);
+  } else {
+    await renderProfileGrid();
+    document.getElementById('profile-screen').style.display = 'flex';
+  }
 }
+window.addEventListener('fbReady', _init);
 </script>
 </body>
 </html>
