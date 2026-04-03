@@ -531,10 +531,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         </button>
       </div>
     </div>
-    <div id="admin-pw2-wrap" style="display:none" class="fg" style="margin-bottom:8px">
-      <label>Confirmar Senha</label>
-      <input id="admin-pw2-input" type="password" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')confirmAdminLogin()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'"/>
-    </div>
+    <div id="admin-pw2-wrap" style="display:none"></div>
     <div id="admin-auth-err" style="display:none;font-size:12px;color:var(--danger);margin-bottom:8px"></div>
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeAdminAuth()">Cancelar</button>
@@ -2318,9 +2315,13 @@ function deleteProfile(id) {
 }
 
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
-const ADMIN_KEY = 'tt_admin_pw';
+const _ADMIN_HASH = '31c386da12bc62c8ae28a442fd2fb44abd53296eab8adf255a82d42ac9eeb1df';
 let _adminClicks = 0, _adminClickTimer = null;
-let _adminSetup = false; // true when creating pw for first time
+
+async function _sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
 function adminLogoClick() {
   _adminClicks++;
@@ -2334,15 +2335,12 @@ function adminLogoClick() {
 }
 
 function showAdminAuth() {
-  const hasPw = !!localStorage.getItem(ADMIN_KEY);
-  _adminSetup = !hasPw;
-  document.getElementById('admin-auth-title').textContent = hasPw ? 'Acesso Restrito' : 'Configurar Admin';
-  document.getElementById('admin-auth-sub').textContent = hasPw ? 'Insira a senha de administrador' : 'Crie sua senha de administrador';
-  document.getElementById('admin-auth-label').textContent = hasPw ? 'Senha Admin' : 'Criar Senha Admin *';
-  document.getElementById('admin-auth-btn').textContent = hasPw ? 'Entrar' : 'Criar & Entrar';
-  document.getElementById('admin-pw2-wrap').style.display = hasPw ? 'none' : 'block';
+  document.getElementById('admin-auth-title').textContent = 'Acesso Restrito';
+  document.getElementById('admin-auth-sub').textContent = 'Insira a senha de administrador';
+  document.getElementById('admin-auth-label').textContent = 'Senha Admin';
+  document.getElementById('admin-auth-btn').textContent = 'Entrar';
+  document.getElementById('admin-pw2-wrap').style.display = 'none';
   document.getElementById('admin-pw-input').value = '';
-  document.getElementById('admin-pw2-input').value = '';
   document.getElementById('admin-auth-err').style.display = 'none';
   document.getElementById('admin-auth-modal').classList.add('open');
   setTimeout(() => document.getElementById('admin-pw-input').focus(), 80);
@@ -2352,30 +2350,20 @@ function closeAdminAuth() {
   document.getElementById('admin-auth-modal').classList.remove('open');
 }
 
-function confirmAdminLogin() {
+async function confirmAdminLogin() {
   const pw = document.getElementById('admin-pw-input').value;
   const errEl = document.getElementById('admin-auth-err');
   errEl.style.display = 'none';
-
-  if (_adminSetup) {
-    const pw2 = document.getElementById('admin-pw2-input').value;
-    if (pw.length < 4) { errEl.textContent = 'Senha deve ter ao menos 4 caracteres.'; errEl.style.display = 'block'; return; }
-    if (pw !== pw2) { errEl.textContent = 'As senhas não coincidem.'; errEl.style.display = 'block'; return; }
-    localStorage.setItem(ADMIN_KEY, pw);
-    closeAdminAuth();
-    openAdminPanel();
-  } else {
-    const stored = localStorage.getItem(ADMIN_KEY);
-    if (pw !== stored) {
-      errEl.textContent = 'Senha incorreta.';
-      errEl.style.display = 'block';
-      document.getElementById('admin-pw-input').value = '';
-      document.getElementById('admin-pw-input').focus();
-      return;
-    }
-    closeAdminAuth();
-    openAdminPanel();
+  const hash = await _sha256(pw);
+  if (hash !== _ADMIN_HASH) {
+    errEl.textContent = 'Senha incorreta.';
+    errEl.style.display = 'block';
+    document.getElementById('admin-pw-input').value = '';
+    document.getElementById('admin-pw-input').focus();
+    return;
   }
+  closeAdminAuth();
+  openAdminPanel();
 }
 
 function openAdminPanel() {
