@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TikTok Manager</title>
+<style>
+:root {
+  --bg:#0d0d12;
+  --s1:#13131c;
+  --s2:#1a1a26;
+  --s3:#22223a;
+  --border:#2a2a40;
+  --border2:#363650;
+  --red:#fe2c55;
+  --teal:#25f4ee;
+  --text:#eeeef5;
+  --muted:#6e6e90;
+  --muted2:#9595b8;
+  --green:#22c55e;
+  --yellow:#f59e0b;
+  --danger:#ef4444;
+  --purple:#a855f7;
+  --r:10px;
+  --r-sm:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;overflow-x:auto}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:56px;background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;padding:0 16px;
+  position:sticky;top:0;z-index:100;
+}
+.logo{font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--red),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+.topbar-sep{width:1px;height:24px;background:var(--border)}
+.topbar-tabs{display:flex;gap:2px}
+.tab{padding:6px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;transition:all .15s}
+.tab:hover{color:var(--text);background:var(--s2)}
+.tab.active{color:var(--text);background:var(--s2);border:1px solid var(--border)}
+.spacer{flex:1}
+.search{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:6px 12px;min-width:150px}
+.search input{background:none;border:none;color:var(--text);font-size:13px;outline:none;width:100%}
+.search input::placeholder{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:#d9243d}
+.btn-ghost{background:var(--s2);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--border2);background:var(--s3)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:5px;display:inline-flex;transition:color .15s}
+.btn-icon:hover{color:var(--teal)}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.25)}.btn-danger:hover{background:rgba(239,68,68,.22)}
+
+/* ── STATS PANEL ── */
+.stats-panel{
+  display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);
+  background:var(--s1);overflow-x:auto;
+}
+.stat-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 16px;flex-shrink:0;min-width:130px;
+}
+.stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-card-info{display:flex;flex-direction:column;gap:1px}
+.stat-num{font-size:22px;font-weight:700;line-height:1}
+.stat-label{font-size:11px;color:var(--muted);white-space:nowrap}
+.c-red{color:var(--red)}.c-green{color:var(--green)}.c-yellow{color:var(--yellow)}.c-teal{color:var(--teal)}.c-purple{color:var(--purple)}.c-danger{color:var(--danger)}
+
+/* ── MULTISELECT ── */
+.card-cb{
+  position:absolute;top:8px;right:8px;
+  width:16px;height:16px;border-radius:4px;
+  border:1.5px solid var(--border2);background:var(--s3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .15s, background .15s, border-color .15s;
+  z-index:2;flex-shrink:0;
+}
+.card:hover .card-cb{opacity:1}
+.card.card-selected .card-cb{opacity:1;background:var(--teal);border-color:var(--teal)}
+.card.card-selected{border-color:var(--teal);box-shadow:0 0 0 2px rgba(37,244,238,.12)}
+.card-cb svg{display:none}
+.card.card-selected .card-cb svg{display:block}
+
+/* ── BULK ACTION BAR ── */
+.bulk-bar{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--s1);border:1px solid var(--border2);border-radius:12px;
+  padding:10px 16px;display:flex;align-items:center;gap:12px;
+  z-index:400;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;
+}
+.bulk-bar.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
+.bulk-count{font-size:13px;font-weight:600;color:var(--teal)}
+.bulk-sep{width:1px;height:18px;background:var(--border)}
+
+/* ── BOARD WRAPPER ── */
+.board-wrap{padding:16px 20px;overflow-x:auto;min-height:calc(100vh - 116px)}
+.board{display:flex;gap:12px;align-items:flex-start;min-width:max-content}
+
+/* ── COLUMN ── */
+.col{
+  width:256px;background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;display:flex;flex-direction:column;flex-shrink:0;
+  max-height:calc(100vh - 148px);
+}
+.col-head{
+  padding:12px 14px;display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.col-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.col-title{font-size:12px;font-weight:600;flex:1;text-transform:uppercase;letter-spacing:.4px}
+.col-count{background:var(--s3);color:var(--muted2);font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px;min-width:22px;text-align:center}
+.col-add{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;display:inline-flex;border-radius:5px;transition:color .15s}
+.col-add:hover{color:var(--teal)}
+
+.col-body{
+  padding:10px 10px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;
+  min-height:60px;
+}
+.col-body::-webkit-scrollbar{width:4px}
+.col-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── DROP ZONE ── */
+.col-body.drag-over{background:rgba(37,244,238,.04);border-radius:8px}
+.drag-placeholder{height:80px;border:2px dashed var(--border2);border-radius:var(--r);opacity:.5;flex-shrink:0}
+
+/* ── CARD ── */
+.card{
+  background:var(--s2);border:1px solid var(--border);border-radius:var(--r);
+  padding:12px;cursor:grab;transition:box-shadow .15s,border-color .15s,transform .1s;
+  user-select:none;position:relative;
+}
+.card:hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.card:active{cursor:grabbing}
+.card.dragging{opacity:.4;transform:scale(.97)}
+.card.selected{border-color:var(--teal);box-shadow:0 0 0 2px rgba(37,244,238,.15)}
+
+.card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.card-avatar{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-email{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+.card-meta{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.card-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted2)}
+.card-row svg{width:11px;height:11px;flex-shrink:0;opacity:.7}
+.card-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-family:'SF Mono','Fira Code',monospace}
+.card-row .plain{font-family:inherit}
+
+/* ── WARMING PROGRESS ── */
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;border-radius:2px;transition:width .3s}
+
+/* ── CARD FOOTER ── */
+.card-foot{display:flex;align-items:center;gap:4px}
+.card-tag{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.card-tag-teal{background:rgba(37,244,238,.1);color:var(--teal)}
+.card-tag-green{background:rgba(34,197,94,.1);color:var(--green)}
+.card-tag-yellow{background:rgba(245,158,11,.1);color:var(--yellow)}
+.card-tag-red{background:rgba(254,44,85,.1);color:var(--red)}
+.card-tag-purple{background:rgba(168,85,247,.1);color:var(--purple)}
+.card-tag-gray{background:rgba(110,110,144,.12);color:var(--muted2)}
+.card-tag-blue{background:rgba(59,130,246,.12);color:#60a5fa}
+.card-tag-adsOn{background:rgba(0,229,160,.12);color:#00e5a0;font-weight:700}
+.card-actions{display:flex;gap:2px;margin-left:auto;opacity:0;transition:opacity .15s}
+.card:hover .card-actions{opacity:1}
+
+/* ── MODAL ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--s1);border:1px solid var(--border);border-radius:14px;
+  width:580px;max-width:95vw;max-height:90vh;overflow-y:auto;
+  transform:translateY(16px) scale(.98);transition:transform .2s;
+}
+.overlay.open .modal{transform:none}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:6px;display:inline-flex}
+.modal-close:hover{background:var(--s2);color:var(--text)}
+.modal-body{padding:20px 24px}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select,.fg textarea{
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:13px;padding:9px 12px;outline:none;
+  transition:border-color .15s;font-family:inherit;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal)}
+.fg select option{background:var(--s1)}
+.fg textarea{resize:vertical;min-height:72px}
+.input-wrap{position:relative;display:flex}
+.input-wrap input{flex:1;border-radius:8px 0 0 8px}
+.input-wrap .reveal{
+  background:var(--s3);border:1px solid var(--border);border-left:none;
+  border-radius:0 8px 8px 0;padding:0 10px;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;transition:color .15s;
+}
+.input-wrap .reveal:hover{color:var(--teal)}
+
+/* ── DETAIL PANEL ── */
+.panel{
+  position:fixed;top:0;right:-480px;width:460px;height:100vh;
+  background:var(--s1);border-left:1px solid var(--border);
+  z-index:300;overflow-y:auto;transition:right .28s cubic-bezier(.4,0,.2,1);
+}
+.panel.open{right:0}
+.panel-head{
+  position:sticky;top:0;padding:18px 20px;border-bottom:1px solid var(--border);
+  background:var(--s1);display:flex;align-items:center;gap:10px;
+}
+.panel-avatar{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;flex-shrink:0;
+}
+.panel-head h2{flex:1;font-size:15px;font-weight:600}
+.panel-body{padding:20px}
+.ds{margin-bottom:22px}
+.ds h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:10px}
+.dr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.dr:last-child{border-bottom:none}
+.dr .k{color:var(--muted);flex-shrink:0;margin-right:12px}
+.dr .v{text-align:right;word-break:break-all;display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.copy-btn{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:2px 5px;border-radius:4px;font-size:11px;
+  display:inline-flex;align-items:center;gap:3px;
+}
+.copy-btn:hover{color:var(--teal);background:rgba(37,244,238,.07)}
+
+/* ── WARMING PAGE ── */
+.warming-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;padding:16px 20px}
+.w-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.w-card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.w-name{font-size:14px;font-weight:600;flex:1}
+.steps-list{display:flex;flex-direction:column;gap:6px}
+.step-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  font-size:12px;transition:opacity .15s;
+}
+.step-item.done{opacity:.45}
+.step-item.done .step-text{text-decoration:line-through}
+.step-item.current{border-color:var(--yellow);background:rgba(245,158,11,.05)}
+.step-num{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;
+}
+.sn-done{background:rgba(34,197,94,.15);color:var(--green)}
+.sn-current{background:rgba(245,158,11,.2);color:var(--yellow)}
+.sn-next{background:var(--s3);color:var(--muted)}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--s1);
+  border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;
+  font-size:13px;z-index:9999;transform:translateY(60px);opacity:0;
+  transition:all .25s;display:flex;align-items:center;gap:8px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── EMPTY COL ── */
+.empty-col{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px 12px;color:var(--muted);font-size:12px;text-align:center;
+  border:2px dashed var(--border);border-radius:8px;gap:6px;cursor:default;
+}
+.empty-col svg{opacity:.3;width:24px;height:24px}
+
+/* ── PAGE ── */
+.page{display:none}.page.active{display:block}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── COUNTRY PICKER ── */
+.country-grid{
+  display:flex;flex-wrap:wrap;gap:6px;
+  max-height:148px;overflow-y:auto;padding:2px 0;
+}
+.country-grid::-webkit-scrollbar{width:4px}
+.country-grid::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.country-chip{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:7px 10px;border-radius:8px;cursor:pointer;
+  background:var(--s2);border:1.5px solid var(--border);
+  transition:border-color .15s, background .15s;min-width:52px;
+}
+.country-chip:hover{border-color:var(--border2);background:var(--s3)}
+.country-chip.selected{border-color:var(--teal);background:rgba(37,244,238,.07)}
+.country-chip .cf{font-size:20px;line-height:1}
+.country-chip .cc{font-size:10px;font-weight:600;color:var(--muted2);letter-spacing:.3px}
+
+/* ── TUTORIAL ── */
+.tutorial-wrap{padding:20px 24px;max-width:960px}
+.tutorial-header{margin-bottom:28px}
+.tutorial-header h1{font-size:20px;font-weight:700;margin-bottom:6px}
+.tutorial-header p{font-size:13px;color:var(--muted);line-height:1.6}
+.tutorial-days{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px}
+.tday{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tday-head{
+  padding:16px 20px;display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid var(--border);
+}
+.tday-number{
+  width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:22px;flex-shrink:0;
+}
+.tday-meta{flex:1}
+.tday-meta h2{font-size:15px;font-weight:700;margin-bottom:2px}
+.tday-meta p{font-size:12px;color:var(--muted);line-height:1.4}
+.tday-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.tday-body{padding:16px 20px}
+.coming-soon{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;
+  text-align:center;color:var(--muted);font-size:12px;
+  border:2px dashed var(--border);border-radius:8px;
+}
+.coming-soon svg{width:28px;height:28px;opacity:.3}
+.tstep-list{display:flex;flex-direction:column;gap:6px}
+.tstep{
+  display:flex;align-items:flex-start;gap:10px;padding:10px 12px;
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  font-size:13px;line-height:1.5;
+}
+.tstep-num{
+  width:22px;height:22px;border-radius:50%;background:var(--s3);
+  color:var(--muted2);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+}
+.tstep-text{flex:1;color:var(--text)}
+.tstep-note{font-size:11px;color:var(--muted);margin-top:3px}
+.tday-footer{padding:10px 20px 14px;display:flex;justify-content:flex-end}
+
+/* ── ADD COL BTN ── */
+.add-col-btn{
+  width:200px;height:52px;background:none;border:2px dashed var(--border);
+  border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  flex-shrink:0;transition:all .15s;align-self:flex-start;
+}
+.add-col-btn:hover{border-color:var(--border2);color:var(--text)}
+
+/* ── DOWNLOADER ── */
+.dl-wrap{padding:20px 24px;max-width:780px}
+.dl-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.dl-thumb{width:88px;height:118px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--s3);display:block}
+.dl-progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:10px}
+.dl-progress-fill{height:100%;background:var(--teal);border-radius:2px;width:0;transition:width .3s}
+.dl-badge-clean{background:rgba(34,197,94,.12);color:var(--green);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+
+/* ── ADMIN ── */
+#admin-panel{position:fixed;inset:0;background:var(--bg);z-index:9998;overflow-y:auto;display:none;flex-direction:column}
+#admin-panel.open{display:flex}
+.admin-bar{height:54px;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 20px;flex-shrink:0;position:sticky;top:0;z-index:10}
+.admin-badge{background:rgba(254,44,85,.15);color:var(--red);border:1px solid rgba(254,44,85,.25);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.admin-body{padding:20px 24px;flex:1}
+.admin-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.admin-stat{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:120px;flex:1}
+.admin-stat-n{font-size:26px;font-weight:700;line-height:1}
+.admin-stat-l{font-size:11px;color:var(--muted);margin-top:3px}
+.admin-user-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.admin-user-head{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.admin-user-head:hover{background:var(--s2)}
+.admin-user-body{padding:0 18px 14px;border-top:1px solid var(--border);display:none}
+.admin-user-body.open{display:block}
+.admin-acct-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.admin-acct-table th{text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:6px 10px;background:var(--s2)}
+.admin-acct-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.admin-acct-table tr:last-child td{border-bottom:none}
+/* ── PROFILES ── */
+#profile-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.profile-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px 12px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .15s,background .15s}
+.profile-card:hover{border-color:var(--teal);background:var(--s2)}
+.profile-avatar-lg{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;transition:transform .15s}
+.profile-card:hover .profile-avatar-lg{transform:scale(1.06)}
+.profile-name-lg{font-size:13px;font-weight:600;word-break:break-word}
+.profile-count{font-size:11px;color:var(--muted)}
+/* user chip */
+.user-chip{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:4px 8px;cursor:pointer;transition:border-color .15s;position:relative}
+.user-chip:hover{border-color:var(--border2)}
+.user-avatar-sm{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.user-menu{position:fixed;background:var(--s1);border:1px solid var(--border2);border-radius:10px;padding:6px;z-index:600;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none}
+.user-menu.open{display:block}
+.umi{padding:8px 12px;border-radius:7px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:9px;transition:background .12s}
+.umi:hover{background:var(--s2)}
+/* prof modals */
+.prof-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:10000;display:none;align-items:center;justify-content:center}
+.prof-modal.open{display:flex}
+.prof-box{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:24px;width:340px;max-width:92vw}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROFILE SELECTION SCREEN
+═══════════════════════════════════════════════════════════ -->
+<div id="profile-screen">
+  <div style="max-width:540px;width:100%;padding:24px 20px">
+    <div style="text-align:center;margin-bottom:30px">
+      <div class="logo" style="font-size:22px;display:inline-block;margin-bottom:8px">TikTok Manager</div>
+      <div style="font-size:13px;color:var(--muted)">Selecione seu perfil para continuar</div>
+    </div>
+    <div id="profile-grid" class="profile-grid"></div>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showNewProfModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo Usuário
+    </button>
+  </div>
+</div>
+
+<!-- Password modal -->
+<div class="prof-modal" id="prof-pw-modal">
+  <div class="prof-box">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+      <div id="prof-pw-avatar" style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0"></div>
+      <div>
+        <div style="font-size:14px;font-weight:600">Entrar como</div>
+        <div id="prof-pw-name" style="font-size:13px;color:var(--muted)"></div>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:8px">
+      <label>Senha</label>
+      <input id="prof-pw-input" type="password" placeholder="Digite sua senha..." onkeydown="if(event.key==='Enter')confirmProfLogin()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+    <div id="prof-pw-err" style="display:none;font-size:12px;color:var(--danger);margin-bottom:10px">Senha incorreta.</div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="cancelProfLogin()">Voltar</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="confirmProfLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- New profile modal -->
+<div class="prof-modal" id="new-prof-modal">
+  <div class="prof-box" style="width:380px">
+    <div style="font-size:15px;font-weight:600;margin-bottom:18px">Criar Novo Usuário</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg">
+        <label>Nome *</label>
+        <input id="new-prof-name" placeholder="Ex: João, Conta Principal..." onkeydown="if(event.key==='Enter')document.getElementById('new-prof-email').focus()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div class="fg">
+        <label>Email *</label>
+        <input id="new-prof-email" type="email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')document.getElementById('new-prof-pw').focus()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div class="fg">
+        <label>Senha *</label>
+        <div class="input-wrap">
+          <input id="new-prof-pw" type="password" placeholder="Mínimo 4 caracteres" onkeydown="if(event.key==='Enter')document.getElementById('new-prof-pw2').focus()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+          <button type="button" class="reveal" onclick="toggleInput('new-prof-pw',this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Confirmar Senha *</label>
+        <div class="input-wrap">
+          <input id="new-prof-pw2" type="password" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')createProfile()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+          <button type="button" class="reveal" onclick="toggleInput('new-prof-pw2',this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="new-prof-err" style="display:none;font-size:12px;color:var(--danger);margin-top:-4px"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeNewProfModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="createProfile()">Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage profiles modal -->
+<div class="prof-modal" id="manage-prof-modal">
+  <div class="prof-box" style="width:420px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:600">Gerenciar Perfis</div>
+      <button class="modal-close" onclick="closeManageProfs()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div id="manage-prof-list" style="display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto"></div>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px" onclick="closeManageProfs();showNewProfModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo Usuário
+    </button>
+  </div>
+</div>
+
+<!-- User dropdown menu (absolute positioned, appended to body) -->
+<div class="user-menu" id="user-menu"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN AUTH MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="prof-modal" id="admin-auth-modal">
+  <div class="prof-box" style="width:360px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <div style="width:34px;height:34px;background:rgba(254,44,85,.12);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:600" id="admin-auth-title">Acesso Restrito</div>
+        <div style="font-size:11px;color:var(--muted)" id="admin-auth-sub">Insira a senha de administrador</div>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:8px">
+      <label id="admin-auth-label">Senha Admin</label>
+      <div class="input-wrap">
+        <input id="admin-pw-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')confirmAdminLogin()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'"/>
+        <button type="button" class="reveal" onclick="toggleInput('admin-pw-input',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="admin-pw2-wrap" style="display:none" class="fg" style="margin-bottom:8px">
+      <label>Confirmar Senha</label>
+      <input id="admin-pw2-input" type="password" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')confirmAdminLogin()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+    <div id="admin-auth-err" style="display:none;font-size:12px;color:var(--danger);margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeAdminAuth()">Cancelar</button>
+      <button class="btn btn-sm" style="flex:1;justify-content:center;background:var(--red);color:#fff" onclick="confirmAdminLogin()" id="admin-auth-btn">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN PANEL (full screen)
+═══════════════════════════════════════════════════════════ -->
+<div id="admin-panel">
+  <div class="admin-bar">
+    <div class="logo">TikTok Manager</div>
+    <span class="admin-badge">ADMIN</span>
+    <div style="flex:1"></div>
+    <button class="btn btn-ghost btn-sm" onclick="adminRefresh()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Atualizar
+    </button>
+    <button class="btn btn-ghost btn-sm" onclick="closeAdminPanel()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Sair do Admin
+    </button>
+  </div>
+  <div class="admin-body">
+    <div style="margin-bottom:20px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Painel de Administração</div>
+      <div style="font-size:12px;color:var(--muted)">Visão global de todas as contas e usuários registrados neste software.</div>
+    </div>
+    <div class="admin-stats" id="admin-stats"></div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px">Usuários Registrados</div>
+    <div id="admin-users-list"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo" onclick="adminLogoClick()" style="cursor:default;user-select:none">TikTok Manager</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-tabs">
+    <button class="tab active" onclick="navigate('board',this)">Board</button>
+    <button class="tab" onclick="navigate('warming',this)">Aquecimento</button>
+    <button class="tab" onclick="navigate('list',this)">Lista</button>
+    <button class="tab" onclick="navigate('pixels',this)">Pixels</button>
+    <button class="tab" onclick="navigate('tutorial',this)">Tutorial</button>
+    <button class="tab" onclick="navigate('downloader',this)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </button>
+  </div>
+  <div class="spacer"></div>
+  <div id="topbar-user"></div>
+  <div class="search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search-inp" placeholder="Buscar conta..." oninput="handleSearch()"/>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="exportJSON()" title="Exportar JSON">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  </button>
+  <button class="btn btn-primary btn-sm" onclick="openModal()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Nova Conta
+  </button>
+</header>
+
+<!-- STATS PANEL -->
+<div class="stats-panel" id="stats-bar"></div>
+
+<!-- BULK ACTION BAR -->
+<div class="bulk-bar" id="bulk-bar">
+  <span class="bulk-count" id="bulk-count">0 selecionadas</span>
+  <div class="bulk-sep"></div>
+  <button class="btn btn-ghost btn-sm" onclick="selectAll()">Selecionar todas</button>
+  <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Limpar</button>
+  <div class="bulk-sep"></div>
+  <button class="btn btn-primary btn-sm" onclick="exportSelectedTXT()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Exportar .TXT
+  </button>
+</div>
+
+<!-- PAGES -->
+<div class="page active" id="page-board">
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+</div>
+
+<div class="page" id="page-warming">
+  <div class="warming-grid" id="warming-grid"></div>
+</div>
+
+<div class="page" id="page-pixels">
+  <div style="padding:20px 24px;max-width:860px">
+
+    <!-- Disparo avulso -->
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:32px;height:32px;background:rgba(254,44,85,.12);border-radius:8px;display:flex;align-items:center;justify-content:center">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600">Disparar Pixel Avulso</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:1px">Insira qualquer Pixel ID e dispare todos os eventos</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input id="px-manual-input" placeholder="Cole o Pixel ID aqui..." style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;font-family:monospace" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')openPxModalManual()"/>
+        <button class="btn btn-primary" onclick="openPxModalManual()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Ativar
+        </button>
+      </div>
+    </div>
+
+    <!-- Pixels das contas -->
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;font-weight:600">Pixels das Contas</div>
+        <span id="px-page-count" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+      <div id="px-accounts-list" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-tutorial">
+  <div id="tutorial-root"></div>
+</div>
+
+<div class="page" id="page-list">
+  <div style="padding:16px 20px">
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--s2);border-bottom:1px solid var(--border)">
+            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">Conta</th>
+            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">Senha</th>
+            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">Recuperação</th>
+            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">Pixel</th>
+            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">Domínio</th>
+            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">Status</th>
+            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="list-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DOWNLOADER PAGE -->
+<div class="page" id="page-downloader">
+  <div class="dl-wrap">
+
+    <!-- Input -->
+    <div class="dl-card" style="padding:20px 24px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:32px;height:32px;background:rgba(254,44,85,.12);border-radius:8px;display:flex;align-items:center;justify-content:center">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600">Baixar Vídeo TikTok</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:1px">HD sem marca d'água · Metadados removidos automaticamente</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input id="dl-url" placeholder="Cole o link do TikTok aqui..." onkeydown="if(event.key==='Enter')dlFetch()"
+          style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;font-family:inherit"
+          onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+        <button class="btn btn-primary" id="dl-fetch-btn" onclick="dlFetch()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Analisar
+        </button>
+      </div>
+      <!-- status de loading -->
+      <div id="dl-loading" style="display:none;margin-top:12px">
+        <div class="dl-progress"><div class="dl-progress-fill" id="dl-prog"></div></div>
+        <div id="dl-loading-text" style="font-size:11px;color:var(--muted);margin-top:6px">Buscando informações...</div>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div id="dl-result" style="display:none"></div>
+
+    <!-- Histórico -->
+    <div id="dl-history-wrap" style="display:none;margin-top:16px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:8px">Baixados recentemente</div>
+      <div id="dl-history" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <div class="panel-avatar" id="panel-avatar"></div>
+    <h2 id="panel-title">Detalhes</h2>
+    <button class="btn btn-ghost btn-sm" onclick="editFromPanel()">Editar</button>
+    <button class="modal-close" onclick="closePanel()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modal-ttl">Nova Conta</h2>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg">
+          <label>Número da Conta</label>
+          <input id="f-acct-num" type="number" min="1" placeholder="Ex: 1, 2, 3..." oninput="updateNamePreview()"/>
+        </div>
+        <div class="fg">
+          <label>Preview do Nome</label>
+          <div id="f-name-preview" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--muted);min-height:38px;display:flex;align-items:center;letter-spacing:-.1px">TikTok #— · —</div>
+        </div>
+        <div class="fg full">
+          <label>País de Origem</label>
+          <div id="country-picker" class="country-grid"></div>
+        </div>
+        <div class="fg">
+          <label>Email da Conta *</label>
+          <input id="f-email" type="email" placeholder="conta@email.com"/>
+        </div>
+        <div class="fg">
+          <label>Senha *</label>
+          <div class="input-wrap">
+            <input id="f-pass" type="password" placeholder="Senha"/>
+            <button type="button" class="reveal" onclick="toggleInput('f-pass',this)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Email de Recuperação</label>
+          <input id="f-rec-email" type="email" placeholder="recovery@email.com"/>
+        </div>
+        <div class="fg">
+          <label>Pixel ID</label>
+          <input id="f-pixel" placeholder="Ex: C4A3B2E1D0F9..." style="font-family:monospace;font-size:12px"/>
+        </div>
+        <div class="fg">
+          <label>Domínio</label>
+          <input id="f-domain" placeholder="Ex: meusite.com.br"/>
+        </div>
+        <div class="fg full">
+          <label>Proxy</label>
+          <input id="f-proxy" placeholder="Ex: 192.168.1.1:8080 ou user:pass@host:port" style="font-family:monospace;font-size:12px"/>
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="f-status">
+            <option value="farming">Dia 1 — Farming</option>
+            <option value="cartao">Dia 2 — Cartão</option>
+            <option value="campanha">Dia 3 — Campanha</option>
+            <option value="pronta">Pronta para Conversão</option>
+            <option value="adsOn">Ads ON 🟢</option>
+            <option value="problema">Com Problema</option>
+            <option value="banida">Banida</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Etapa de Aquecimento</label>
+          <select id="f-step">
+            <option value="0">Não iniciado</option>
+            <option value="1">Dia 1 — Farming</option>
+            <option value="2">Dia 2 — Cartão de crédito</option>
+            <option value="3">Dia 3 — Campanha reach + pixel</option>
+            <option value="4">Dia 4 — Pronta para conversão ✓</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label>Observações</label>
+          <textarea id="f-notes" placeholder="Informações adicionais..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveAccount()">Salvar Conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- PIXEL MODAL -->
+<div class="overlay" id="px-overlay" onclick="pxOverlayClick(event)">
+  <div class="modal" style="width:520px">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:28px;height:28px;background:rgba(254,44,85,.12);border-radius:7px;display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div>
+          <h2 id="px-modal-title" style="font-size:14px;font-weight:600">Ativar Pixel</h2>
+          <div id="px-modal-sub" style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:1px"></div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closePxModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding:16px 22px">
+      <!-- STATUS -->
+      <div id="px-status" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:12px">
+        <div id="px-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0"></div>
+        <span id="px-status-text" style="color:var(--muted)">Aguardando ativação...</span>
+      </div>
+      <!-- EVENTS LIST -->
+      <div id="px-events" style="display:flex;flex-direction:column;gap:5px"></div>
+    </div>
+    <div class="modal-foot" style="gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="closePxModal()">Fechar</button>
+      <button class="btn btn-ghost btn-sm" id="px-btn-single" onclick="fireSingleEvent()" style="display:none">Próximo Evento</button>
+      <button class="btn btn-primary btn-sm" id="px-btn-all" onclick="fireAllEvents()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Disparar Todos
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+let DB = [];
+let editId = null;
+let panelId = null;
+let dragId = null;
+let searchQ = '';
+let selectedIds = new Set();
+
+const COLS = [
+  { id:'farming',  label:'Dia 1 — Farming',       dot:'#6e6e90', tag:'gray'   },
+  { id:'cartao',   label:'Dia 2 — Cartão',         dot:'#3b82f6', tag:'blue'   },
+  { id:'campanha', label:'Dia 3 — Campanha',        dot:'#f59e0b', tag:'yellow' },
+  { id:'pronta',   label:'Pronta p/ Conversão',     dot:'#22c55e', tag:'green'  },
+  { id:'adsOn',    label:'Ads ON',                 dot:'#00e5a0', tag:'adsOn'  },
+  { id:'problema', label:'Problema',               dot:'#a855f7', tag:'purple' },
+  { id:'banida',   label:'Banida',                 dot:'#ef4444', tag:'red'    },
+];
+
+const STEPS = [
+  '',
+  'Dia 1 — Farming das contas',
+  'Dia 2 — Adicionar cartão de crédito',
+  'Dia 3 — Campanha de reach ($5) + criar pixel',
+  'Dia 4 — Conta pronta para conversão ✓',
+];
+
+const STEP_ICONS = ['', '🌱', '💳', '📢', '🚀'];
+const STEP_DETAIL = [
+  '',
+  'Processo de farming da conta do zero. Detalhes do passo a passo serão adicionados em breve.',
+  'Adicionar um cartão de crédito válido à conta de anúncios do TikTok.',
+  'Subir uma campanha de Reach, deixar gastar $5 e pausar. Criar o pixel da conta.',
+  'Conta aquecida e pronta para rodar campanhas de conversão.',
+];
+
+const AVATARS = ['#fe2c55','#25f4ee','#a855f7','#f59e0b','#22c55e','#3b82f6','#ec4899','#14b8a6'];
+
+function avatarColor(str) {
+  let h = 0;
+  for(let i=0;i<(str||'').length;i++) h = ((h<<5)-h)+str.charCodeAt(i);
+  return AVATARS[Math.abs(h) % AVATARS.length];
+}
+
+function initials(str) {
+  if(!str) return '?';
+  const w = str.trim().split(/\s+/);
+  return w.length > 1 ? (w[0][0]+w[1][0]).toUpperCase() : str.slice(0,2).toUpperCase();
+}
+
+// ─── PERSIST ─────────────────────────────────────────────────────────────────
+function persist() {
+  if (!currentUser) return;
+  localStorage.setItem('tt_v2_' + currentUser.id, JSON.stringify(DB));
+  renderAll();
+}
+
+function renderAll() {
+  renderStats();
+  renderBoard();
+  renderWarming();
+  renderList();
+  renderPixelsPage();
+  if(panelId) openPanel(panelId);
+}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+const PAGES = ['board','warming','list','pixels','tutorial','downloader'];
+function navigate(p, el) {
+  PAGES.forEach(id => document.getElementById('page-'+id).classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ─── STATS ───────────────────────────────────────────────────────────────────
+function renderStats() {
+  const total = DB.length;
+  const adsOn = DB.filter(a=>a.status==='adsOn').length;
+  const pronta = DB.filter(a=>a.status==='pronta').length;
+  const banida = DB.filter(a=>a.status==='banida').length;
+
+  const si = (icon, color, bg, num, label) =>
+    `<div class="stat-card">
+      <div class="stat-icon" style="background:${bg}">${icon}</div>
+      <div class="stat-card-info">
+        <div class="stat-num" style="color:${color}">${num}</div>
+        <div class="stat-label">${label}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('stats-bar').innerHTML =
+    si(`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+      'var(--teal)', 'rgba(37,244,238,.08)', total, 'Total') +
+    si(`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+      '#00e5a0', 'rgba(0,229,160,.08)', adsOn, 'Ads ON') +
+    si(`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`,
+      'var(--green)', 'rgba(34,197,94,.08)', pronta, 'Prontas p/ Conversão') +
+    si(`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
+      'var(--danger)', 'rgba(239,68,68,.08)', banida, 'Banidas');
+}
+
+// ─── BOARD ───────────────────────────────────────────────────────────────────
+function renderBoard() {
+  const board = document.getElementById('board');
+  const q = searchQ.toLowerCase();
+
+  board.innerHTML = COLS.map(col => {
+    let cards = DB.filter(a => a.status === col.id);
+    if(q) cards = cards.filter(a =>
+      (a.name||'').toLowerCase().includes(q) ||
+      (a.email||'').toLowerCase().includes(q) ||
+      (a.domain||'').toLowerCase().includes(q)
+    );
+
+    const cardsHtml = cards.length
+      ? cards.map(a => renderCard(a)).join('')
+      : `<div class="empty-col">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <span>Sem contas</span>
+         </div>`;
+
+    return `<div class="col" id="col-${col.id}">
+      <div class="col-head">
+        <div class="col-dot" style="background:${col.dot}"></div>
+        <div class="col-title">${col.label}</div>
+        <div class="col-count">${cards.length}</div>
+        <button class="col-add" title="Adicionar" onclick="openModal(null,'${col.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="col-body" id="body-${col.id}"
+        ondragover="dragOver(event,'${col.id}')"
+        ondragleave="dragLeave(event,'${col.id}')"
+        ondrop="drop(event,'${col.id}')">
+        ${cardsHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Re-attach drag events
+  board.querySelectorAll('.card[draggable]').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragId = el.dataset.id;
+      setTimeout(() => el.classList.add('dragging'), 0);
+    });
+    el.addEventListener('dragend', () => {
+      dragId = null;
+      el.classList.remove('dragging');
+      document.querySelectorAll('.col-body').forEach(b => b.classList.remove('drag-over'));
+    });
+  });
+}
+
+function renderCard(a) {
+  const step = parseInt(a.warmingStep)||0;
+  const pct = step === 0 ? 0 : Math.round((step/4)*100);
+  const col = COLS.find(c=>c.id===a.status)||COLS[0];
+  const tagClass = `card-tag-${col.tag}`;
+  const av = avatarColor(a.name||a.email);
+  const ini = initials(a.name||a.email);
+
+  const isSel = selectedIds.has(a.id);
+  return `<div class="card${isSel?' card-selected':''}" draggable="true" data-id="${a.id}"
+    onclick="handleCardClick(event,'${a.id}')"
+    ondragstart="startDrag(event,'${a.id}')">
+    <div class="card-cb" onclick="event.stopPropagation();toggleSelect('${a.id}')">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0d0d12" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="card-top">
+      <div class="card-avatar" style="background:${av}22;color:${av}">${ini}</div>
+      <div class="card-info">
+        <div class="card-name">${esc(a.name||'Sem nome')}</div>
+        <div class="card-email">${esc(a.email)}</div>
+      </div>
+    </div>
+    <div class="card-meta">
+      ${a.pixel ? `<div class="card-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>${esc(a.pixel.slice(0,20))}${a.pixel.length>20?'…':''}</span>
+      </div>` : ''}
+      ${a.domain ? `<div class="card-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span class="plain">${esc(a.domain)}</span>
+      </div>` : ''}
+    </div>
+    ${step > 0 ? `
+    <div style="margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px">
+        <span>Aquecimento</span><span>${step === 4 ? 'Pronta' : `D${step}/4`}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${pct}%;background:${step===4?'var(--green)':'var(--yellow)'}"></div>
+      </div>
+    </div>` : ''}
+    <div class="card-foot">
+      <span class="card-tag ${tagClass}">${col.label}</span>
+      <div class="card-actions">
+        <button class="btn-icon" title="Editar" onclick="event.stopPropagation();openModal('${a.id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-icon" title="Deletar" style="color:var(--danger)" onclick="event.stopPropagation();deleteAcc('${a.id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── DRAG & DROP ─────────────────────────────────────────────────────────────
+function startDrag(e, id) {
+  dragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragOver(e, colId) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.getElementById('body-'+colId)?.classList.add('drag-over');
+}
+
+function dragLeave(e, colId) {
+  document.getElementById('body-'+colId)?.classList.remove('drag-over');
+}
+
+function drop(e, colId) {
+  e.preventDefault();
+  document.getElementById('body-'+colId)?.classList.remove('drag-over');
+  if(!dragId) return;
+  const a = DB.find(x=>x.id===dragId);
+  if(a && a.status !== colId){
+    a.status = colId;
+    a.updatedAt = new Date().toISOString();
+    toast(`Movida para "${COLS.find(c=>c.id===colId)?.label}"`, 'success');
+    persist();
+  }
+  dragId = null;
+}
+
+// ─── WARMING ─────────────────────────────────────────────────────────────────
+function renderWarming() {
+  const grid = document.getElementById('warming-grid');
+  const list = DB.filter(a => parseInt(a.warmingStep)>0 || ['farming','cartao','campanha'].includes(a.status));
+
+  if(!list.length){
+    grid.innerHTML = `<div style="padding:60px 20px;text-align:center;color:var(--muted);grid-column:1/-1">
+      <p style="font-size:14px">Nenhuma conta em aquecimento.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(a => {
+    const step = parseInt(a.warmingStep)||0;
+    const col = COLS.find(c=>c.id===a.status)||COLS[0];
+    const av = avatarColor(a.name||a.email);
+    const ini = initials(a.name||a.email);
+
+    const stepsHtml = STEPS.slice(1).map((s,i) => {
+      const n = i+1;
+      const done = n < step;
+      const current = n === step;
+      const snClass = done ? 'sn-done' : current ? 'sn-current' : 'sn-next';
+      return `<div class="step-item ${done?'done':''} ${current?'current':''}">
+        <div class="step-num ${snClass}">${done?'✓':n}</div>
+        <span class="step-text">${s}</span>
+        ${current?'<span class="card-tag card-tag-yellow" style="margin-left:auto;font-size:10px">Atual</span>':''}
+      </div>`;
+    }).join('');
+
+    return `<div class="w-card">
+      <div class="w-card-head">
+        <div style="width:34px;height:34px;border-radius:9px;background:${av}22;color:${av};font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+        <div style="flex:1;min-width:0">
+          <div class="w-name">${esc(a.name||a.email)}</div>
+          <div style="font-size:11px;color:var(--muted)">${esc(a.email)}</div>
+        </div>
+        <span class="card-tag card-tag-${col.tag}">${col.label}</span>
+      </div>
+      <div class="progress-bar" style="margin-bottom:12px">
+        <div class="progress-fill" style="width:${step===4?100:Math.round((step/4)*100)}%;background:${step===4?'var(--green)':'var(--yellow)'}"></div>
+      </div>
+      <div class="steps-list">${stepsHtml}</div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        ${step < 4 ? `<button class="btn btn-ghost btn-sm" style="flex:1" onclick="advStep('${a.id}')">Avançar → Dia ${step+1}</button>` : '<span style="font-size:12px;color:var(--green);flex:1;text-align:center">✓ Pronta para conversão</span>'}
+        <button class="btn btn-ghost btn-sm" onclick="openPanel('${a.id}')">Ver</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function advStep(id) {
+  const a = DB.find(x=>x.id===id);
+  if(!a) return;
+  const s = parseInt(a.warmingStep)||0;
+  if(s >= 4){ toast('Aquecimento já concluído!'); return; }
+  a.warmingStep = String(s+1);
+  const STATUS_MAP = { '1':'farming', '2':'cartao', '3':'campanha', '4':'pronta' };
+  a.status = STATUS_MAP[a.warmingStep] || a.status;
+  if(a.warmingStep === '4') toast('Dia 4 concluído! Conta pronta para conversão 🚀','success');
+  else toast(`Dia ${a.warmingStep} concluído!`,'success');
+  a.updatedAt = new Date().toISOString();
+  persist();
+}
+
+// ─── LIST ─────────────────────────────────────────────────────────────────────
+function renderList() {
+  const tbody = document.getElementById('list-tbody');
+  const q = searchQ.toLowerCase();
+  let list = DB;
+  if(q) list = list.filter(a =>
+    (a.name||'').toLowerCase().includes(q) ||
+    (a.email||'').toLowerCase().includes(q) ||
+    (a.domain||'').toLowerCase().includes(q)
+  );
+
+  if(!list.length){
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--muted)">Nenhuma conta encontrada.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(a => {
+    const col = COLS.find(c=>c.id===a.status)||COLS[0];
+    return `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="openPanel('${a.id}')">
+      <td style="padding:12px 16px">
+        <div style="font-weight:500;font-size:13px">${esc(a.name||'—')}</div>
+        <div style="font-size:11px;color:var(--muted)">${esc(a.email)}</div>
+      </td>
+      <td style="padding:12px 16px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span id="lpass-${a.id}" style="letter-spacing:2px;color:var(--muted);font-size:12px">••••••</span>
+          <span id="lpassv-${a.id}" style="display:none;font-size:12px">${esc(a.password)}</span>
+          <button class="btn-icon" onclick="event.stopPropagation();toggleListPass('${a.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="copy-btn" onclick="event.stopPropagation();copy('${esc(a.password)}','Senha copiada!')">Copiar</button>
+        </div>
+      </td>
+      <td style="padding:12px 16px;font-size:12px;color:var(--muted)">${esc(a.recovery||'—')}</td>
+      <td style="padding:12px 16px;font-family:monospace;font-size:11px;color:var(--muted2)">${a.pixel?esc(a.pixel.slice(0,18))+'…':'—'}</td>
+      <td style="padding:12px 16px">
+        ${a.domain?`<span class="card-tag card-tag-teal">${esc(a.domain)}</span>`:'<span style="color:var(--muted)">—</span>'}
+      </td>
+      <td style="padding:12px 16px">
+        <span class="card-tag card-tag-${col.tag}">${col.label}</span>
+      </td>
+      <td style="padding:12px 16px" onclick="event.stopPropagation()">
+        <div style="display:flex;gap:6px">
+          <button class="btn-icon" onclick="openModal('${a.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon" style="color:var(--danger)" onclick="deleteAcc('${a.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleListPass(id) {
+  const h = document.getElementById('lpass-'+id);
+  const v = document.getElementById('lpassv-'+id);
+  if(!h||!v) return;
+  const showing = v.style.display!=='none';
+  h.style.display = showing?'':'none';
+  v.style.display = showing?'none':'';
+}
+
+// ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
+function openPanel(id) {
+  const a = DB.find(x=>x.id===id);
+  if(!a) return;
+  panelId = id;
+  const col = COLS.find(c=>c.id===a.status)||COLS[0];
+  const av = avatarColor(a.name||a.email);
+  const ini = initials(a.name||a.email);
+  const step = parseInt(a.warmingStep)||0;
+
+  const pa = document.getElementById('panel-avatar');
+  pa.style.background = av+'22';
+  pa.style.color = av;
+  pa.textContent = ini;
+  document.getElementById('panel-title').textContent = a.name||a.email;
+
+  document.getElementById('panel-body').innerHTML = `
+    <div class="ds">
+      <h3>Acesso</h3>
+      <div class="dr"><span class="k">Email</span><span class="v">${esc(a.email)}<button class="copy-btn" onclick="copy('${esc(a.email)}','Email copiado!')">Copiar</button></span></div>
+      <div class="dr"><span class="k">Senha</span><span class="v">
+        <span id="pp-h">••••••••</span>
+        <span id="pp-v" style="display:none;font-size:12px">${esc(a.password)}</span>
+        <button class="copy-btn" onclick="togglePanelPass()">[ver]</button>
+        <button class="copy-btn" onclick="copy('${esc(a.password)}','Senha copiada!')">Copiar</button>
+      </span></div>
+      <div class="dr"><span class="k">Email Recuperação</span><span class="v">${esc(a.recovery||'—')}${a.recovery?`<button class="copy-btn" onclick="copy('${esc(a.recovery)}','Copiado!')">Copiar</button>`:''}</span></div>
+    </div>
+    <div class="ds">
+      <h3>Campanha</h3>
+      <div class="dr"><span class="k">Pixel ID</span><span class="v" style="font-family:monospace;font-size:11px">${esc(a.pixel||'—')}${a.pixel?`<button class="copy-btn" onclick="copy('${esc(a.pixel)}','Pixel copiado!')">Copiar</button>`:''}</span></div>
+      ${a.pixel?`<div style="margin-top:8px"><button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" onclick="openPxModal('${esc(a.pixel)}','${esc(a.name||a.email)}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Ativar Pixel</button></div>`:''}
+
+      <div class="dr"><span class="k">Domínio</span><span class="v">${a.domain?`<span class="card-tag card-tag-teal">${esc(a.domain)}</span>`:'—'}</span></div>
+      <div class="dr"><span class="k">Proxy</span><span class="v" style="font-family:monospace;font-size:11px">${esc(a.proxy||'—')}${a.proxy?`<button class="copy-btn" onclick="copy('${esc(a.proxy)}','Proxy copiado!')">Copiar</button>`:''}</span></div>
+    </div>
+    <div class="ds">
+      <h3>Aquecimento</h3>
+      <div class="progress-bar" style="margin-bottom:10px">
+        <div class="progress-fill" style="width:${step===4?100:Math.round((step/4)*100)}%;background:${step===4?'var(--green)':'var(--yellow)'}"></div>
+      </div>
+      <div class="dr"><span class="k">Status</span><span class="v"><span class="card-tag card-tag-${col.tag}">${col.label}</span></span></div>
+      <div class="dr"><span class="k">Etapa</span><span class="v">${step===0?'Não iniciado':step===4?'<span class="card-tag card-tag-green">Pronta ✓</span>':`Dia ${step} de 4`}</span></div>
+      <div class="dr"><span class="k">Descrição</span><span class="v" style="font-size:12px;color:var(--muted2)">${esc(STEPS[step]||'—')}</span></div>
+    </div>
+    ${a.notes?`<div class="ds"><h3>Observações</h3><p style="font-size:13px;line-height:1.6;color:var(--muted2)">${esc(a.notes)}</p></div>`:''}
+    <div class="ds">
+      <h3>Datas</h3>
+      <div class="dr"><span class="k">Criada</span><span class="v" style="font-size:12px;color:var(--muted)">${fmt(a.createdAt)}</span></div>
+      <div class="dr"><span class="k">Atualizada</span><span class="v" style="font-size:12px;color:var(--muted)">${fmt(a.updatedAt)}</span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      ${step<4?`<button class="btn btn-ghost btn-sm" style="flex:1" onclick="advStep('${a.id}')">Avançar → Dia ${step+1}</button>`:''}
+      <button class="btn btn-danger btn-sm" onclick="deleteAcc('${a.id}')">Deletar</button>
+    </div>
+  `;
+
+  document.getElementById('panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  panelId = null;
+}
+
+function editFromPanel() { if(panelId) openModal(panelId); }
+
+function togglePanelPass() {
+  const h = document.getElementById('pp-h');
+  const v = document.getElementById('pp-v');
+  if(!h||!v) return;
+  const s = v.style.display!=='none';
+  h.style.display=s?'':'none';
+  v.style.display=s?'none':'';
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(id, defaultStatus) {
+  editId = id||null;
+  document.getElementById('modal-ttl').textContent = id?'Editar Conta':'Nova Conta';
+
+  if(id){
+    const a = DB.find(x=>x.id===id);
+    if(a){
+      // parse "TikTok #N · FLAG CODE" or legacy name
+      const match = (a.name||'').match(/TikTok #(\d+)\s*·\s*.+?(\w{3})$/);
+      const num = match ? match[1] : '';
+      const cCode = match ? match[2] : (a.country||null);
+      document.getElementById('f-acct-num').value = num;
+      document.getElementById('f-email').value = a.email||'';
+      document.getElementById('f-pass').value = a.password||'';
+      document.getElementById('f-rec-email').value = a.recovery||'';
+      document.getElementById('f-pixel').value = a.pixel||'';
+      document.getElementById('f-domain').value = a.domain||'';
+      document.getElementById('f-proxy').value = a.proxy||'';
+      document.getElementById('f-status').value = a.status||'farming';
+      document.getElementById('f-step').value = a.warmingStep||'0';
+      document.getElementById('f-notes').value = a.notes||'';
+      initCountryPicker(cCode);
+      updateNamePreview();
+    }
+  } else {
+    document.getElementById('f-acct-num').value = '';
+    ['f-email','f-pass','f-rec-email','f-pixel','f-domain','f-proxy','f-notes'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('f-step').value='0';
+    document.getElementById('f-status').value = defaultStatus||'farming';
+    initCountryPicker(null);
+    updateNamePreview();
+  }
+
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  editId = null;
+}
+
+function overlayClick(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+function saveAccount() {
+  const email = document.getElementById('f-email').value.trim();
+  const pass = document.getElementById('f-pass').value.trim();
+  if(!email){ toast('Email obrigatório','error'); return; }
+  if(!pass){ toast('Senha obrigatória','error'); return; }
+
+  const data = {
+    id: editId||uid(),
+    name: buildAccountName() || `TikTok #${document.getElementById('f-acct-num').value||'?'}`,
+    country: selectedCountry||'',
+    email,
+    password: pass,
+    recovery: document.getElementById('f-rec-email').value.trim(),
+    pixel: document.getElementById('f-pixel').value.trim(),
+    domain: document.getElementById('f-domain').value.trim(),
+    proxy: document.getElementById('f-proxy').value.trim(),
+    status: document.getElementById('f-status').value,
+    warmingStep: document.getElementById('f-step').value,
+    notes: document.getElementById('f-notes').value.trim(),
+    updatedAt: new Date().toISOString(),
+    createdAt: editId ? (DB.find(a=>a.id===editId)||{}).createdAt||new Date().toISOString() : new Date().toISOString(),
+  };
+
+  if(editId){
+    const i = DB.findIndex(a=>a.id===editId);
+    if(i>-1) DB[i]=data;
+    toast('Conta atualizada!','success');
+  } else {
+    DB.unshift(data);
+    toast('Conta adicionada!','success');
+  }
+
+  persist();
+  closeModal();
+}
+
+// ─── DELETE ───────────────────────────────────────────────────────────────────
+function deleteAcc(id) {
+  const a = DB.find(x=>x.id===id);
+  if(!a||!confirm(`Deletar "${a.name||a.email}"?`)) return;
+  DB = DB.filter(x=>x.id!==id);
+  if(panelId===id) closePanel();
+  persist();
+  toast('Conta removida.','success');
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+function handleSearch() {
+  searchQ = document.getElementById('search-inp').value.trim();
+  renderBoard();
+  renderList();
+}
+
+// ─── EXPORT ──────────────────────────────────────────────────────────────────
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`tiktok-${new Date().toISOString().slice(0,10)}.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast('Exportado!','success');
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function fmt(iso){ try{return new Date(iso).toLocaleString('pt-BR');}catch{return '—';} }
+
+function copy(text, msg) {
+  navigator.clipboard.writeText(text).then(()=>toast(msg||'Copiado!','success')).catch(()=>toast('Erro ao copiar','error'));
+}
+
+let toastT;
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  const icon = type==='success'?'✓':'✕';
+  const color = type==='success'?'var(--green)':'var(--danger)';
+  el.innerHTML = `<span style="color:${color};font-weight:700">${icon}</span> ${msg}`;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+function toggleInput(id, btn) {
+  const el = document.getElementById(id);
+  const showing = el.type === 'text';
+  el.type = showing ? 'password' : 'text';
+  btn.style.color = showing ? '' : 'var(--teal)';
+}
+
+// ─── TUTORIAL ────────────────────────────────────────────────────────────────
+const TUTORIAL_DAYS = [
+  {
+    num: 1,
+    icon: '🌱',
+    label: 'Dia 1 — Farming',
+    subtitle: 'Processo de farming das contas do zero',
+    color: '#6e6e90',
+    badge: { text: 'Etapa 1/4', cls: 'card-tag-gray' },
+    steps: null, // a ser preenchido
+  },
+  {
+    num: 2,
+    icon: '💳',
+    label: 'Dia 2 — Cartão de Crédito',
+    subtitle: 'Adicionar cartão de crédito à conta de anúncios',
+    color: '#3b82f6',
+    badge: { text: 'Etapa 2/4', cls: 'card-tag-blue' },
+    steps: null,
+  },
+  {
+    num: 3,
+    icon: '📢',
+    label: 'Dia 3 — Campanha de Reach + Pixel',
+    subtitle: 'Subir campanha reach ($5), pausar e criar pixel',
+    color: '#f59e0b',
+    badge: { text: 'Etapa 3/4', cls: 'card-tag-yellow' },
+    steps: null,
+  },
+  {
+    num: 4,
+    icon: '🚀',
+    label: 'Dia 4 — Conta Pronta para Conversão',
+    subtitle: 'Conta aquecida e pronta para rodar campanhas de performance',
+    color: '#22c55e',
+    badge: { text: 'Etapa 4/4', cls: 'card-tag-green' },
+    steps: null,
+  },
+];
+
+function renderTutorial() {
+  const root = document.getElementById('tutorial-root');
+
+  const daysHtml = TUTORIAL_DAYS.map(day => {
+    const bodyHtml = day.steps && day.steps.length
+      ? `<div class="tstep-list">${day.steps.map((s,i) => `
+          <div class="tstep">
+            <div class="tstep-num">${i+1}</div>
+            <div>
+              <div class="tstep-text">${esc(s.text)}</div>
+              ${s.note?`<div class="tstep-note">${esc(s.note)}</div>`:''}
+            </div>
+          </div>`).join('')}</div>`
+      : `<div class="coming-soon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <strong style="color:var(--muted2)">Tutorial em breve</strong>
+          <span>O passo a passo detalhado deste dia<br/>será adicionado em breve.</span>
+        </div>`;
+
+    return `<div class="tday">
+      <div class="tday-head">
+        <div class="tday-number" style="background:${day.color}22;font-size:22px">${day.icon}</div>
+        <div class="tday-meta">
+          <h2>${day.label}</h2>
+          <p>${day.subtitle}</p>
+        </div>
+        <span class="tday-badge card-tag ${day.badge.cls}">${day.badge.text}</span>
+      </div>
+      <div class="tday-body">${bodyHtml}</div>
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `<div class="tutorial-wrap">
+    <div class="tutorial-header">
+      <h1>Tutorial — Cronograma de Aquecimento</h1>
+      <p>Passo a passo completo do processo de aquecimento das contas TikTok Ads em 4 dias.<br/>
+      Os detalhes de cada etapa serão adicionados conforme o processo for documentado.</p>
+    </div>
+    <div class="tutorial-days">${daysHtml}</div>
+  </div>`;
+}
+
+// ─── COUNTRY PICKER ──────────────────────────────────────────────────────────
+const COUNTRIES = [
+  { code:'USA', flag:'🇺🇸' }, { code:'GBR', flag:'🇬🇧' }, { code:'GER', flag:'🇩🇪' },
+  { code:'FRA', flag:'🇫🇷' }, { code:'AUS', flag:'🇦🇺' }, { code:'CAN', flag:'🇨🇦' },
+  { code:'BRA', flag:'🇧🇷' }, { code:'ITA', flag:'🇮🇹' }, { code:'ESP', flag:'🇪🇸' },
+  { code:'NLD', flag:'🇳🇱' }, { code:'SWE', flag:'🇸🇪' }, { code:'NOR', flag:'🇳🇴' },
+  { code:'DNK', flag:'🇩🇰' }, { code:'POL', flag:'🇵🇱' }, { code:'MEX', flag:'🇲🇽' },
+  { code:'ARG', flag:'🇦🇷' }, { code:'JPN', flag:'🇯🇵' }, { code:'KOR', flag:'🇰🇷' },
+  { code:'SGP', flag:'🇸🇬' }, { code:'THA', flag:'🇹🇭' }, { code:'IDN', flag:'🇮🇩' },
+  { code:'PHL', flag:'🇵🇭' }, { code:'UAE', flag:'🇦🇪' }, { code:'ZAF', flag:'🇿🇦' },
+  { code:'CHE', flag:'🇨🇭' }, { code:'AUT', flag:'🇦🇹' }, { code:'BEL', flag:'🇧🇪' },
+  { code:'PRT', flag:'🇵🇹' }, { code:'ROU', flag:'🇷🇴' }, { code:'CZE', flag:'🇨🇿' },
+];
+
+let selectedCountry = null;
+
+function initCountryPicker(currentCode) {
+  selectedCountry = currentCode || null;
+  const grid = document.getElementById('country-picker');
+  if(!grid) return;
+  grid.innerHTML = COUNTRIES.map(c =>
+    `<div class="country-chip${c.code === selectedCountry ? ' selected' : ''}"
+       onclick="selectCountry('${c.code}')" title="${c.code}">
+      <span class="cf">${c.flag}</span>
+      <span class="cc">${c.code}</span>
+    </div>`
+  ).join('');
+}
+
+function selectCountry(code) {
+  selectedCountry = selectedCountry === code ? null : code;
+  document.querySelectorAll('.country-chip').forEach(el => {
+    el.classList.toggle('selected', el.title === selectedCountry);
+  });
+  updateNamePreview();
+}
+
+function updateNamePreview() {
+  const num = document.getElementById('f-acct-num')?.value;
+  const preview = document.getElementById('f-name-preview');
+  if(!preview) return;
+  if(num && selectedCountry) {
+    const c = COUNTRIES.find(x => x.code === selectedCountry);
+    preview.textContent = `TikTok #${num} · ${c ? c.flag+' ' : ''}${selectedCountry}`;
+    preview.style.color = 'var(--text)';
+  } else if(num) {
+    preview.textContent = `TikTok #${num} · —`;
+    preview.style.color = 'var(--muted2)';
+  } else {
+    preview.textContent = 'TikTok #— · —';
+    preview.style.color = 'var(--muted)';
+  }
+}
+
+function buildAccountName() {
+  const num = document.getElementById('f-acct-num')?.value;
+  if(!num) return '';
+  if(!selectedCountry) return `TikTok #${num}`;
+  const c = COUNTRIES.find(x => x.code === selectedCountry);
+  return `TikTok #${num} · ${c ? c.flag+' ' : ''}${selectedCountry}`;
+}
+
+// ─── PIXEL ───────────────────────────────────────────────────────────────────
+const PX_EVENTS = [
+  { name: 'ViewContent',          label: 'Visualização de conteúdo',    icon: '👁️'  },
+  { name: 'Search',               label: 'Pesquisa',                    icon: '🔍'  },
+  { name: 'AddToCart',            label: 'Adicionar ao carrinho',       icon: '🛒'  },
+  { name: 'AddPaymentInfo',       label: 'Informação de pagamento',     icon: '💳'  },
+  { name: 'InitiateCheckout',     label: 'Iniciar checkout',            icon: '🏁'  },
+  { name: 'PlaceAnOrder',         label: 'Realizar pedido',             icon: '📦'  },
+  { name: 'CompletePayment',      label: 'Pagamento completo',          icon: '💰'  },
+  { name: 'CompleteRegistration', label: 'Registro completo',           icon: '✅'  },
+  { name: 'Contact',              label: 'Contato',                     icon: '📞'  },
+  { name: 'SubmitForm',           label: 'Envio de formulário',         icon: '📋'  },
+  { name: 'Subscribe',            label: 'Inscrição',                   icon: '🔔'  },
+];
+
+let pxPixelId = null;
+let pxLoaded = false;
+let pxFiring = false;
+let pxEventQueue = [];
+let pxFiredCount = 0;
+
+function openPxModal(pixelId, accountName) {
+  pxPixelId = pixelId;
+  pxLoaded = false;
+  pxFiring = false;
+  pxFiredCount = 0;
+  pxEventQueue = [...PX_EVENTS];
+
+  document.getElementById('px-modal-title').textContent = `Ativar Pixel — ${accountName}`;
+  document.getElementById('px-modal-sub').textContent = pixelId;
+  document.getElementById('px-btn-all').disabled = false;
+  document.getElementById('px-btn-all').textContent = 'Disparar Todos';
+  setStatus('idle', 'Aguardando ativação...');
+
+  document.getElementById('px-events').innerHTML = PX_EVENTS.map((e,i) =>
+    `<div id="pxev-${i}" style="display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--s2);border:1px solid var(--border);border-radius:7px;font-size:12px;transition:all .2s">
+      <span style="font-size:14px;width:18px;text-align:center">${e.icon}</span>
+      <span style="flex:1;color:var(--muted2)">${e.name}</span>
+      <span style="font-size:11px;color:var(--muted)">${e.label}</span>
+      <span id="pxev-s-${i}" style="font-size:11px;color:var(--muted);min-width:60px;text-align:right">—</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('px-overlay').classList.add('open');
+}
+
+function closePxModal() {
+  document.getElementById('px-overlay').classList.remove('open');
+  pxFiring = false;
+}
+
+function pxOverlayClick(e) {
+  if(e.target === document.getElementById('px-overlay')) closePxModal();
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('px-status-dot');
+  const txt = document.getElementById('px-status-text');
+  const colors = { idle:'var(--muted)', loading:'var(--yellow)', ready:'var(--teal)', firing:'var(--yellow)', done:'var(--green)', error:'var(--danger)' };
+  dot.style.background = colors[type] || 'var(--muted)';
+  if(type === 'firing' || type === 'loading') {
+    dot.style.animation = 'pulse 1s infinite';
+  } else {
+    dot.style.animation = '';
+  }
+  txt.style.color = colors[type] || 'var(--muted)';
+  txt.textContent = text;
+}
+
+function loadPixelScript() {
+  return new Promise((resolve, reject) => {
+    if(window.ttq && pxLoaded) { resolve(); return; }
+    setStatus('loading', 'Carregando script do TikTok...');
+
+    // Init ttq queue
+    !function(w,d,t){
+      w.TiktokAnalyticsObject=t;
+      var ttq=w[t]=w[t]||[];
+      ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];
+      ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+      for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+      ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};
+      ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js",o=d.createElement("script");
+        o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;
+        var a=d.getElementsByTagName("script")[0];
+        a.parentNode.insertBefore(o,a);
+        ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};
+        o.onload=function(){ pxLoaded=true; resolve(); };
+        o.onerror=function(){ reject(new Error('Falha ao carregar script')); };
+      };
+    }(window, document, 'ttq');
+
+    window.ttq.load(pxPixelId);
+    window.ttq.page();
+  });
+}
+
+async function fireAllEvents() {
+  if(pxFiring) return;
+  pxFiring = true;
+  const btn = document.getElementById('px-btn-all');
+  btn.disabled = true;
+
+  try {
+    await loadPixelScript();
+    setStatus('firing', 'Disparando eventos...');
+    btn.textContent = 'Disparando...';
+
+    for(let i = 0; i < PX_EVENTS.length; i++) {
+      if(!pxFiring) break;
+      await fireEvent(i);
+      await sleep(1100);
+    }
+
+    setStatus('done', `✓ Todos os ${PX_EVENTS.length} eventos disparados com sucesso!`);
+    btn.textContent = 'Concluído ✓';
+    toast('Pixel ativado! Todos os eventos foram disparados.', 'success');
+  } catch(err) {
+    setStatus('error', `Erro: ${err.message}`);
+    btn.disabled = false;
+    btn.textContent = 'Tentar novamente';
+    pxFiring = false;
+  }
+}
+
+function fireEvent(i) {
+  return new Promise(resolve => {
+    const ev = PX_EVENTS[i];
+    const statusEl = document.getElementById(`pxev-s-${i}`);
+    const rowEl = document.getElementById(`pxev-${i}`);
+
+    statusEl.textContent = '⏳ Disparando';
+    statusEl.style.color = 'var(--yellow)';
+    rowEl.style.borderColor = 'rgba(245,158,11,.4)';
+    rowEl.style.background = 'rgba(245,158,11,.04)';
+
+    try {
+      const params = { event_id: 'ev_' + Date.now() + '_' + i };
+      if(ev.name === 'CompletePayment' || ev.name === 'PlaceAnOrder') {
+        params.value = (Math.random() * 100 + 1).toFixed(2);
+        params.currency = 'BRL';
+      }
+      window.ttq.track(ev.name, params);
+
+      setTimeout(() => {
+        statusEl.textContent = '✓ Enviado';
+        statusEl.style.color = 'var(--green)';
+        rowEl.style.borderColor = 'rgba(34,197,94,.3)';
+        rowEl.style.background = 'rgba(34,197,94,.04)';
+        resolve();
+      }, 600);
+    } catch(e) {
+      statusEl.textContent = '✕ Erro';
+      statusEl.style.color = 'var(--danger)';
+      resolve();
+    }
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function openPxModalManual() {
+  const val = document.getElementById('px-manual-input').value.trim();
+  if(!val){ toast('Cole um Pixel ID primeiro.','error'); return; }
+  openPxModal(val, 'Avulso');
+}
+
+function renderPixelsPage() {
+  const list = DB.filter(a => a.pixel);
+  const countEl = document.getElementById('px-page-count');
+  const listEl = document.getElementById('px-accounts-list');
+  if(!countEl || !listEl) return;
+
+  countEl.textContent = `${list.length} conta${list.length!==1?'s':''} com pixel`;
+
+  if(!list.length) {
+    listEl.innerHTML = `<div style="padding:32px;text-align:center;color:var(--muted);font-size:13px">
+      Nenhuma conta com pixel cadastrado.<br/>
+      <span style="font-size:11px">Adicione um Pixel ID ao cadastrar ou editar uma conta.</span>
+    </div>`;
+    return;
+  }
+
+  const COLS_MAP = { farming:'gray', cartao:'blue', campanha:'yellow', pronta:'green', adsOn:'adsOn', problema:'purple', banida:'red' };
+  const STATUS_LABEL = { farming:'Dia 1', cartao:'Dia 2', campanha:'Dia 3', pronta:'Pronta', adsOn:'Ads ON', problema:'Problema', banida:'Banida' };
+
+  listEl.innerHTML = list.map(a => {
+    const tag = COLS_MAP[a.status]||'gray';
+    const av = avatarColor(a.name||a.email);
+    const ini = initials(a.name||a.email);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:8px">
+      <div style="width:30px;height:30px;border-radius:7px;background:${av}22;color:${av};font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500">${esc(a.name||a.email)}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.pixel)}</div>
+      </div>
+      <span class="card-tag card-tag-${tag}" style="flex-shrink:0">${STATUS_LABEL[a.status]||a.status}</span>
+      <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="openPxModal('${esc(a.pixel)}','${esc(a.name||a.email)}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Ativar
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ─── MULTISELECT ─────────────────────────────────────────────────────────────
+function handleCardClick(e, id) {
+  if(selectedIds.size > 0) { toggleSelect(id); return; }
+  openPanel(id);
+}
+
+function toggleSelect(id) {
+  if(selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  renderBoard();
+  renderBulkBar();
+}
+
+function renderBulkBar() {
+  const bar = document.getElementById('bulk-bar');
+  const n = selectedIds.size;
+  document.getElementById('bulk-count').textContent = `${n} conta${n!==1?'s':''} selecionada${n!==1?'s':''}`;
+  bar.classList.toggle('show', n > 0);
+}
+
+function selectAll() {
+  const q = searchQ.toLowerCase();
+  DB.filter(a => !q ||
+    (a.name||'').toLowerCase().includes(q) ||
+    (a.email||'').toLowerCase().includes(q)
+  ).forEach(a => selectedIds.add(a.id));
+  renderBoard();
+  renderBulkBar();
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  renderBoard();
+  renderBulkBar();
+}
+
+function exportSelectedTXT() {
+  const list = DB.filter(a => selectedIds.has(a.id));
+  if(!list.length) return;
+
+  const STEP_LABELS = ['Não iniciado','Dia 1 — Farming','Dia 2 — Cartão','Dia 3 — Campanha','Pronta para Conversão ✓'];
+  const STATUS_LABELS = { farming:'Dia 1 — Farming', cartao:'Dia 2 — Cartão', campanha:'Dia 3 — Campanha', pronta:'Pronta p/ Conversão', adsOn:'Ads ON 🟢', problema:'Problema', banida:'Banida' };
+
+  const stripEmoji = s => (s||'').replace(/[\u{1F1E0}-\u{1F1FF}]{2}/gu, '').trim();
+  const lines = list.map((a, i) => [
+    `${'─'.repeat(48)}`,
+    `  CONTA ${i+1}${a.name ? ` — ${stripEmoji(a.name)}` : ''}`,
+    `${'─'.repeat(48)}`,
+    `  Email          : ${a.email || '—'}`,
+    `  Senha          : ${a.password || '—'}`,
+    `  Email Recup.   : ${a.recovery || '—'}`,
+    `  Pixel          : ${a.pixel || '—'}`,
+    `  Domínio        : ${a.domain || '—'}`,
+    `  Proxy          : ${a.proxy || '—'}`,
+    a.notes ? `  Obs.           : ${a.notes}` : null,
+    '',
+  ].filter(l => l !== null).join('\n')).join('\n');
+
+  const header = `TikTok Manager — Exportação de Contas\n\n`;
+
+  const blob = new Blob([header + lines], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `contas-tiktok-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`${list.length} conta${list.length!==1?'s':''} exportada${list.length!==1?'s':''}!`, 'success');
+  clearSelection();
+}
+
+// ─── DOWNLOADER ──────────────────────────────────────────────────────────────
+let dlData = null;
+let dlHistory = [];
+
+function dlSetLoading(on, text) {
+  document.getElementById('dl-loading').style.display = on ? 'block' : 'none';
+  if (text) document.getElementById('dl-loading-text').textContent = text;
+  const prog = document.getElementById('dl-prog');
+  if (on) { prog.style.width = '0%'; setTimeout(() => prog.style.width = '60%', 50); }
+  else prog.style.width = '100%';
+}
+
+async function dlFetch() {
+  const url = document.getElementById('dl-url').value.trim();
+  if (!url) { toast('Cole um link do TikTok', 'error'); return; }
+  if (!url.includes('tiktok.com')) { toast('Link inválido — use um link do TikTok', 'error'); return; }
+
+  const btn = document.getElementById('dl-fetch-btn');
+  btn.disabled = true;
+  document.getElementById('dl-result').style.display = 'none';
+  dlSetLoading(true, 'Buscando informações do vídeo...');
+
+  try {
+    const form = new FormData();
+    form.append('url', url);
+    form.append('hd', '1');
+
+    const res = await fetch('https://www.tikwm.com/api/', { method: 'POST', body: form });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json.code !== 0) throw new Error(json.msg || 'Erro da API');
+
+    dlData = json.data;
+    dlSetLoading(false);
+    dlRenderResult(json.data);
+  } catch (err) {
+    dlSetLoading(false);
+    toast(`Erro: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function dlFmtSize(b) { return b > 1048576 ? (b/1048576).toFixed(1)+' MB' : Math.round(b/1024)+' KB'; }
+function dlFmtDur(s) { return s >= 60 ? `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}` : `${s}s`; }
+
+function dlRenderResult(d) {
+  const wrap = document.getElementById('dl-result');
+  const hdSize = d.hd_size ? dlFmtSize(d.hd_size) : '';
+  const sdSize = d.size ? dlFmtSize(d.size) : '';
+
+  wrap.innerHTML = `
+    <div class="dl-card">
+      <div style="display:flex;gap:14px;padding:16px">
+        <img class="dl-thumb" src="${esc(d.cover||'')}" onerror="this.style.background='var(--s3)'"/>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;line-height:1.45;margin-bottom:6px">${esc(d.title||'(sem título)')}</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">@${esc((d.author&&d.author.unique_id)||'—')}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${d.width&&d.height ? `<span class="card-tag card-tag-teal">${d.width}×${d.height}</span>` : ''}
+            <span class="card-tag card-tag-gray">${dlFmtDur(d.duration||0)}</span>
+            <span class="dl-badge-clean">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Metadados removidos
+            </span>
+          </div>
+        </div>
+      </div>
+      <div id="dl-dl-status" style="display:none;padding:0 16px 10px">
+        <div class="dl-progress"><div class="dl-progress-fill" id="dl-dl-prog"></div></div>
+        <div id="dl-dl-text" style="font-size:11px;color:var(--muted);margin-top:5px">Baixando...</div>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" id="dl-hd-btn" onclick="dlDownload('hd')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar HD${hdSize ? ' · '+hdSize : ''}
+        </button>
+        <button class="btn btn-ghost" id="dl-sd-btn" onclick="dlDownload('sd')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          SD${sdSize ? ' · '+sdSize : ''}
+        </button>
+      </div>
+    </div>`;
+
+  wrap.style.display = 'block';
+}
+
+async function dlDownload(quality) {
+  if (!dlData) return;
+  const videoUrl = quality === 'hd' ? (dlData.hdplay || dlData.play) : dlData.play;
+  if (!videoUrl) { toast('URL não disponível', 'error'); return; }
+
+  const hdBtn = document.getElementById('dl-hd-btn');
+  const sdBtn = document.getElementById('dl-sd-btn');
+  const statusDiv = document.getElementById('dl-dl-status');
+  const progBar = document.getElementById('dl-dl-prog');
+  const statusText = document.getElementById('dl-dl-text');
+
+  if (hdBtn) hdBtn.disabled = true;
+  if (sdBtn) sdBtn.disabled = true;
+  statusDiv.style.display = 'block';
+  progBar.style.width = '0%';
+  statusText.textContent = 'Conectando...';
+
+  const author = (dlData.author && dlData.author.unique_id) || 'tiktok';
+  const safeName = author.replace(/[^a-z0-9_]/gi, '_');
+  const filename = `${safeName}_${quality === 'hd' ? 'HD' : 'SD'}_clean.mp4`;
+
+  try {
+    statusText.textContent = 'Baixando vídeo...';
+    progBar.style.transition = 'width .4s';
+    progBar.style.width = '30%';
+
+    const res = await fetch(videoUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    progBar.style.width = '65%';
+    statusText.textContent = 'Limpando metadados...';
+
+    const buffer = await res.arrayBuffer();
+    const cleanBuf = dlStripMetadata(buffer);
+
+    progBar.style.width = '90%';
+    statusText.textContent = 'Preparando download...';
+
+    const blob = new Blob([cleanBuf], { type: 'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+
+    progBar.style.width = '100%';
+    statusText.textContent = '✓ Download concluído — metadados removidos!';
+    statusText.style.color = 'var(--green)';
+
+    dlAddHistory({ title: dlData.title, author: dlData.author?.unique_id, cover: dlData.cover, quality, filename });
+    toast(`Download HD concluído — metadados limpos!`, 'success');
+
+  } catch (err) {
+    // Fallback: abre URL diretamente
+    statusText.textContent = 'Download via link direto (sem limpeza de metadados)...';
+    const a = document.createElement('a');
+    a.href = videoUrl; a.download = filename; a.target = '_blank'; a.click();
+    toast('Baixando via link direto.', 'success');
+  } finally {
+    setTimeout(() => {
+      if (hdBtn) hdBtn.disabled = false;
+      if (sdBtn) sdBtn.disabled = false;
+      statusText.style.color = '';
+    }, 2500);
+  }
+}
+
+function dlStripMetadata(buffer) {
+  const data = new Uint8Array(buffer.slice(0));
+  // MP4 metadata atom types to blank out (4-byte type codes)
+  const targets = [
+    [0xA9,0x6E,0x61,0x6D], // ©nam - title
+    [0xA9,0x74,0x6F,0x6F], // ©too - encoder/software
+    [0xA9,0x63,0x6D,0x74], // ©cmt - comment
+    [0xA9,0x64,0x61,0x79], // ©day - creation date
+    [0xA9,0x61,0x75,0x74], // ©aut - author
+    [0xA9,0x61,0x6C,0x62], // ©alb - album
+    [0x64,0x65,0x73,0x63], // desc - description
+    [0x63,0x70,0x72,0x74], // cprt - copyright
+    [0x58,0x4D,0x50,0x20], // XMP  - XMP metadata
+  ];
+  for (const t of targets) {
+    for (let i = 4; i < data.length - 4; i++) {
+      if (data[i]===t[0] && data[i+1]===t[1] && data[i+2]===t[2] && data[i+3]===t[3]) {
+        const size = ((data[i-4]<<24)|(data[i-3]<<16)|(data[i-2]<<8)|data[i-1])>>>0;
+        if (size >= 8 && size < 5000000) {
+          for (let j = 8; j < size && (i-4+j) < data.length; j++) data[i-4+j] = 0;
+        }
+      }
+    }
+  }
+  return data.buffer;
+}
+
+function dlAddHistory(item) {
+  dlHistory.unshift({ ...item, ts: Date.now() });
+  if (dlHistory.length > 10) dlHistory.pop();
+  if (currentUser) localStorage.setItem('tt_dl_hist_' + currentUser.id, JSON.stringify(dlHistory));
+  dlRenderHistory();
+}
+
+function dlRenderHistory() {
+  const wrap = document.getElementById('dl-history-wrap');
+  const list = document.getElementById('dl-history');
+  if (!wrap || !list) return;
+  if (!dlHistory.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = dlHistory.map(h => `
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--s1);border:1px solid var(--border);border-radius:8px">
+      <img src="${esc(h.cover||'')}" style="width:36px;height:48px;object-fit:cover;border-radius:5px;flex-shrink:0;background:var(--s3)"/>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.title||'—')}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">@${esc(h.author||'—')} · ${h.quality==='hd'?'HD':'SD'}</div>
+      </div>
+      <span class="card-tag card-tag-gray" style="font-size:10px;flex-shrink:0">${h.filename||''}</span>
+    </div>`).join('');
+}
+
+// ─── PROFILES ────────────────────────────────────────────────────────────────
+const PROF_KEY = 'tt_profiles';
+let currentUser = null;
+let _profLoginTarget = null;
+
+function getProfiles() { return JSON.parse(localStorage.getItem(PROF_KEY) || '[]'); }
+function saveProfiles(list) { localStorage.setItem(PROF_KEY, JSON.stringify(list)); }
+
+function loadSession() {
+  const s = sessionStorage.getItem('tt_session');
+  if (!s) return null;
+  const { id } = JSON.parse(s);
+  return getProfiles().find(p => p.id === id) || null;
+}
+
+function loginAs(profile) {
+  currentUser = profile;
+  sessionStorage.setItem('tt_session', JSON.stringify({ id: profile.id }));
+  DB = JSON.parse(localStorage.getItem('tt_v2_' + profile.id) || '[]');
+  dlHistory = JSON.parse(localStorage.getItem('tt_dl_hist_' + profile.id) || '[]');
+  document.getElementById('profile-screen').style.display = 'none';
+  renderTopbarUser();
+  renderAll();
+  dlRenderHistory();
+  toast(`Bem-vindo, ${profile.name}!`, 'success');
+}
+
+function logout() {
+  sessionStorage.removeItem('tt_session');
+  currentUser = null;
+  DB = [];
+  dlHistory = [];
+  closeUserMenu();
+  renderProfileGrid();
+  document.getElementById('profile-screen').style.display = 'flex';
+}
+
+function renderTopbarUser() {
+  const el = document.getElementById('topbar-user');
+  if (!el || !currentUser) return;
+  const av = avatarColor(currentUser.name);
+  const ini = initials(currentUser.name);
+  el.innerHTML = `
+    <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)" title="${esc(currentUser.name)}">
+      <div class="user-avatar-sm" style="background:${av};color:#0d0d12;width:24px;height:24px;font-size:10px">${ini}</div>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>`;
+}
+
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('user-menu');
+  const isOpen = menu.classList.contains('open');
+  if (isOpen) { closeUserMenu(); return; }
+  if (!currentUser) return;
+  const av = avatarColor(currentUser.name);
+  const ini = initials(currentUser.name);
+  menu.innerHTML = `
+    <div style="padding:10px 12px 8px;border-bottom:1px solid var(--border);margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${av};color:#0d0d12;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+        <div>
+          <div style="font-size:12px;font-weight:600">${esc(currentUser.name)}</div>
+          <div style="font-size:10px;color:var(--muted)">${DB.length} conta${DB.length!==1?'s':''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="umi" onclick="switchProfile()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Trocar perfil
+    </div>
+    <div class="umi" onclick="openManageProfs()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Gerenciar perfis
+    </div>
+    <div style="height:1px;background:var(--border);margin:4px 0"></div>
+    <div class="umi" style="color:var(--danger)" onclick="logout()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sair
+    </div>`;
+  const chip = document.getElementById('user-chip');
+  const rect = chip.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 6) + 'px';
+  menu.style.right = (window.innerWidth - rect.right) + 'px';
+  menu.classList.add('open');
+  setTimeout(() => document.addEventListener('click', closeUserMenu, { once: true }), 0);
+}
+
+function closeUserMenu() {
+  document.getElementById('user-menu')?.classList.remove('open');
+}
+
+function switchProfile() {
+  closeUserMenu();
+  renderProfileGrid();
+  document.getElementById('profile-screen').style.display = 'flex';
+}
+
+function renderProfileGrid() {
+  const profiles = getProfiles();
+  const grid = document.getElementById('profile-grid');
+  if (!grid) return;
+  if (!profiles.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--muted);font-size:13px">
+      Nenhum perfil criado ainda.<br/>Crie seu primeiro perfil abaixo.
+    </div>`;
+    return;
+  }
+  grid.innerHTML = profiles.map(p => {
+    const av = avatarColor(p.name);
+    const ini = initials(p.name);
+    const count = JSON.parse(localStorage.getItem('tt_v2_' + p.id) || '[]').length;
+    return `<div class="profile-card" onclick="selectProfile('${p.id}')">
+      <div class="profile-avatar-lg" style="background:${av};color:#0d0d12">${ini}</div>
+      <div class="profile-name-lg">${esc(p.name)}</div>
+      <div class="profile-count">${count} conta${count!==1?'s':''}</div>
+      ${p.password ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function selectProfile(id) {
+  const p = getProfiles().find(x => x.id === id);
+  if (!p) return;
+  if (p.password) {
+    _profLoginTarget = p;
+    const av = avatarColor(p.name);
+    const ini = initials(p.name);
+    const avEl = document.getElementById('prof-pw-avatar');
+    avEl.style.background = av;
+    avEl.style.color = '#0d0d12';
+    avEl.textContent = ini;
+    document.getElementById('prof-pw-name').textContent = p.name;
+    document.getElementById('prof-pw-input').value = '';
+    document.getElementById('prof-pw-err').style.display = 'none';
+    document.getElementById('prof-pw-modal').classList.add('open');
+    setTimeout(() => document.getElementById('prof-pw-input').focus(), 80);
+  } else {
+    loginAs(p);
+  }
+}
+
+function confirmProfLogin() {
+  if (!_profLoginTarget) return;
+  const pw = document.getElementById('prof-pw-input').value;
+  if (pw !== _profLoginTarget.password) {
+    document.getElementById('prof-pw-err').style.display = 'block';
+    document.getElementById('prof-pw-input').value = '';
+    document.getElementById('prof-pw-input').focus();
+    return;
+  }
+  document.getElementById('prof-pw-modal').classList.remove('open');
+  loginAs(_profLoginTarget);
+  _profLoginTarget = null;
+}
+
+function cancelProfLogin() {
+  _profLoginTarget = null;
+  document.getElementById('prof-pw-modal').classList.remove('open');
+}
+
+function showNewProfModal() {
+  ['new-prof-name','new-prof-email','new-prof-pw','new-prof-pw2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('new-prof-err').style.display = 'none';
+  document.getElementById('new-prof-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-prof-name').focus(), 80);
+}
+
+function closeNewProfModal() {
+  document.getElementById('new-prof-modal').classList.remove('open');
+}
+
+function profErr(msg) {
+  const el = document.getElementById('new-prof-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function createProfile() {
+  const name  = document.getElementById('new-prof-name').value.trim();
+  const email = document.getElementById('new-prof-email').value.trim();
+  const pw    = document.getElementById('new-prof-pw').value;
+  const pw2   = document.getElementById('new-prof-pw2').value;
+
+  if (!name)  { profErr('Nome é obrigatório.'); document.getElementById('new-prof-name').focus(); return; }
+  if (!email || !email.includes('@')) { profErr('Informe um email válido.'); document.getElementById('new-prof-email').focus(); return; }
+  if (pw.length < 4) { profErr('Senha deve ter ao menos 4 caracteres.'); document.getElementById('new-prof-pw').focus(); return; }
+  if (pw !== pw2) { profErr('As senhas não coincidem.'); document.getElementById('new-prof-pw2').focus(); return; }
+
+  const profiles = getProfiles();
+  if (profiles.find(p => p.email === email)) { profErr('Já existe um perfil com esse email.'); return; }
+
+  const newP = { id: uid(), name, email, password: pw, createdAt: new Date().toISOString() };
+  profiles.push(newP);
+  saveProfiles(profiles);
+  document.getElementById('new-prof-modal').classList.remove('open');
+  loginAs(newP);
+}
+
+function openManageProfs() {
+  closeUserMenu();
+  renderManageList();
+  document.getElementById('manage-prof-modal').classList.add('open');
+}
+
+function closeManageProfs() {
+  document.getElementById('manage-prof-modal').classList.remove('open');
+}
+
+function renderManageList() {
+  const profiles = getProfiles();
+  const list = document.getElementById('manage-prof-list');
+  if (!profiles.length) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Nenhum perfil criado.</div>`;
+    return;
+  }
+  list.innerHTML = profiles.map(p => {
+    const av = avatarColor(p.name);
+    const ini = initials(p.name);
+    const count = JSON.parse(localStorage.getItem('tt_v2_' + p.id) || '[]').length;
+    const isCurrent = currentUser && currentUser.id === p.id;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:8px">
+      <div style="width:32px;height:32px;border-radius:50%;background:${av};color:#0d0d12;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500">${esc(p.name)}${isCurrent?` <span style="font-size:10px;color:var(--teal);margin-left:4px">● você</span>`:''}</div>
+        <div style="font-size:11px;color:var(--muted)">${esc(p.email||'')} · ${count} conta${count!==1?'s':''}</div>
+      </div>
+      ${!isCurrent ? `<button class="btn btn-danger btn-sm" onclick="deleteProfile('${p.id}')">Deletar</button>` : '<span style="font-size:11px;color:var(--muted)">Ativo</span>'}
+    </div>`;
+  }).join('');
+}
+
+function deleteProfile(id) {
+  const p = getProfiles().find(x => x.id === id);
+  if (!p || !confirm(`Deletar perfil "${p.name}" e TODOS os dados?\nEsta ação não pode ser desfeita.`)) return;
+  localStorage.removeItem('tt_v2_' + id);
+  localStorage.removeItem('tt_dl_hist_' + id);
+  saveProfiles(getProfiles().filter(x => x.id !== id));
+  renderManageList();
+  toast(`Perfil "${p.name}" deletado.`, 'success');
+}
+
+// ─── ADMIN ───────────────────────────────────────────────────────────────────
+const ADMIN_KEY = 'tt_admin_pw';
+let _adminClicks = 0, _adminClickTimer = null;
+let _adminSetup = false; // true when creating pw for first time
+
+function adminLogoClick() {
+  _adminClicks++;
+  clearTimeout(_adminClickTimer);
+  if (_adminClicks >= 3) {
+    _adminClicks = 0;
+    showAdminAuth();
+  } else {
+    _adminClickTimer = setTimeout(() => { _adminClicks = 0; }, 700);
+  }
+}
+
+function showAdminAuth() {
+  const hasPw = !!localStorage.getItem(ADMIN_KEY);
+  _adminSetup = !hasPw;
+  document.getElementById('admin-auth-title').textContent = hasPw ? 'Acesso Restrito' : 'Configurar Admin';
+  document.getElementById('admin-auth-sub').textContent = hasPw ? 'Insira a senha de administrador' : 'Crie sua senha de administrador';
+  document.getElementById('admin-auth-label').textContent = hasPw ? 'Senha Admin' : 'Criar Senha Admin *';
+  document.getElementById('admin-auth-btn').textContent = hasPw ? 'Entrar' : 'Criar & Entrar';
+  document.getElementById('admin-pw2-wrap').style.display = hasPw ? 'none' : 'block';
+  document.getElementById('admin-pw-input').value = '';
+  document.getElementById('admin-pw2-input').value = '';
+  document.getElementById('admin-auth-err').style.display = 'none';
+  document.getElementById('admin-auth-modal').classList.add('open');
+  setTimeout(() => document.getElementById('admin-pw-input').focus(), 80);
+}
+
+function closeAdminAuth() {
+  document.getElementById('admin-auth-modal').classList.remove('open');
+}
+
+function confirmAdminLogin() {
+  const pw = document.getElementById('admin-pw-input').value;
+  const errEl = document.getElementById('admin-auth-err');
+  errEl.style.display = 'none';
+
+  if (_adminSetup) {
+    const pw2 = document.getElementById('admin-pw2-input').value;
+    if (pw.length < 4) { errEl.textContent = 'Senha deve ter ao menos 4 caracteres.'; errEl.style.display = 'block'; return; }
+    if (pw !== pw2) { errEl.textContent = 'As senhas não coincidem.'; errEl.style.display = 'block'; return; }
+    localStorage.setItem(ADMIN_KEY, pw);
+    closeAdminAuth();
+    openAdminPanel();
+  } else {
+    const stored = localStorage.getItem(ADMIN_KEY);
+    if (pw !== stored) {
+      errEl.textContent = 'Senha incorreta.';
+      errEl.style.display = 'block';
+      document.getElementById('admin-pw-input').value = '';
+      document.getElementById('admin-pw-input').focus();
+      return;
+    }
+    closeAdminAuth();
+    openAdminPanel();
+  }
+}
+
+function openAdminPanel() {
+  renderAdminPanel();
+  document.getElementById('admin-panel').classList.add('open');
+}
+
+function closeAdminPanel() {
+  document.getElementById('admin-panel').classList.remove('open');
+}
+
+function adminRefresh() {
+  renderAdminPanel();
+  toast('Dados atualizados.', 'success');
+}
+
+function renderAdminPanel() {
+  const profiles = getProfiles();
+  const allData = profiles.map(p => ({
+    p,
+    accounts: JSON.parse(localStorage.getItem('tt_v2_' + p.id) || '[]')
+  }));
+
+  const totalAccounts = allData.reduce((s, d) => s + d.accounts.length, 0);
+  const totalAdsOn    = allData.reduce((s, d) => s + d.accounts.filter(a => a.status === 'adsOn').length, 0);
+  const totalPronta   = allData.reduce((s, d) => s + d.accounts.filter(a => a.status === 'pronta').length, 0);
+  const totalBanida   = allData.reduce((s, d) => s + d.accounts.filter(a => a.status === 'banida').length, 0);
+
+  const stat = (num, label, color) =>
+    `<div class="admin-stat">
+      <div class="admin-stat-n" style="color:${color}">${num}</div>
+      <div class="admin-stat-l">${label}</div>
+    </div>`;
+
+  document.getElementById('admin-stats').innerHTML =
+    stat(profiles.length, 'Usuários', 'var(--teal)') +
+    stat(totalAccounts,   'Contas TikTok', 'var(--text)') +
+    stat(totalAdsOn,      'Ads ON', '#00e5a0') +
+    stat(totalPronta,     'Prontas p/ Conv.', 'var(--green)') +
+    stat(totalBanida,     'Banidas', 'var(--danger)');
+
+  if (!profiles.length) {
+    document.getElementById('admin-users-list').innerHTML =
+      `<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;background:var(--s1);border:1px solid var(--border);border-radius:12px">Nenhum usuário registrado ainda.</div>`;
+    return;
+  }
+
+  const COLS_MAP = { farming:'gray', cartao:'blue', campanha:'yellow', pronta:'green', adsOn:'adsOn', problema:'purple', banida:'red' };
+  const STATUS_LABEL = { farming:'Dia 1', cartao:'Dia 2', campanha:'Dia 3', pronta:'Pronta', adsOn:'Ads ON', problema:'Problema', banida:'Banida' };
+
+  document.getElementById('admin-users-list').innerHTML = allData.map((d, idx) => {
+    const { p, accounts } = d;
+    const av = avatarColor(p.name);
+    const ini = initials(p.name);
+    const adsOn  = accounts.filter(a => a.status === 'adsOn').length;
+    const pronta = accounts.filter(a => a.status === 'pronta').length;
+    const banida = accounts.filter(a => a.status === 'banida').length;
+
+    const accountsHtml = accounts.length ? `
+      <table class="admin-acct-table">
+        <thead><tr>
+          <th>Nome</th><th>Email</th><th>Pixel</th><th>Domínio</th><th>Proxy</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+          ${accounts.map(a => `<tr>
+            <td style="font-weight:500">${esc(a.name||'—')}</td>
+            <td style="color:var(--muted)">${esc(a.email||'—')}</td>
+            <td style="font-family:monospace;font-size:11px;color:var(--muted2)">${a.pixel ? esc(a.pixel.slice(0,16))+'…' : '—'}</td>
+            <td>${a.domain ? `<span class="card-tag card-tag-teal" style="font-size:10px">${esc(a.domain)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
+            <td style="font-family:monospace;font-size:11px;color:var(--muted2)">${a.proxy ? esc(a.proxy.slice(0,20)) : '—'}</td>
+            <td><span class="card-tag card-tag-${COLS_MAP[a.status]||'gray'}" style="font-size:10px">${STATUS_LABEL[a.status]||a.status}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` :
+      `<div style="padding:16px 0;text-align:center;color:var(--muted);font-size:12px">Nenhuma conta cadastrada.</div>`;
+
+    return `<div class="admin-user-card">
+      <div class="admin-user-head" onclick="adminToggleUser(${idx})">
+        <div style="width:36px;height:36px;border-radius:50%;background:${av};color:#0d0d12;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600">${esc(p.name)}</div>
+          <div style="font-size:11px;color:var(--muted)">${esc(p.email||'—')} · Criado em ${fmt(p.createdAt)}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
+          ${accounts.length ? `<span class="card-tag card-tag-gray">${accounts.length} conta${accounts.length!==1?'s':''}</span>` : ''}
+          ${adsOn  ? `<span class="card-tag card-tag-adsOn">${adsOn} Ads ON</span>` : ''}
+          ${pronta ? `<span class="card-tag card-tag-green">${pronta} Prontas</span>` : ''}
+          ${banida ? `<span class="card-tag card-tag-red">${banida} Banidas</span>` : ''}
+          <svg id="admin-chevron-${idx}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="admin-user-body" id="admin-user-body-${idx}">${accountsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function adminToggleUser(idx) {
+  const body = document.getElementById('admin-user-body-' + idx);
+  const chevron = document.getElementById('admin-chevron-' + idx);
+  const isOpen = body.classList.toggle('open');
+  if (chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderTutorial();
+const _savedSession = loadSession();
+if (_savedSession) {
+  loginAs(_savedSession);
+} else {
+  renderProfileGrid();
+}
+</script>
+</body>
+</html>
