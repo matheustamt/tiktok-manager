@@ -818,6 +818,39 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           <label>Observações</label>
           <textarea id="f-notes" placeholder="Informações adicionais..."></textarea>
         </div>
+
+        <!-- ── INFORMAÇÕES DA EMPRESA ── -->
+        <div class="fg full" style="margin-top:4px">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 0 6px">
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);white-space:nowrap">Informações da Empresa</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Nome da Empresa</label>
+          <input id="f-biz-name" placeholder="Ex: Soluções Tech Ltda"/>
+        </div>
+        <div class="fg">
+          <label>URL do Site</label>
+          <input id="f-biz-url" type="url" placeholder="https://empresa.com.br"/>
+        </div>
+        <div class="fg">
+          <label>Telefone</label>
+          <input id="f-biz-phone" placeholder="Ex: +55 11 99999-9999"/>
+        </div>
+        <div class="fg">
+          <label>Endereço</label>
+          <input id="f-biz-address" placeholder="Ex: Rua das Flores, 123 — SP"/>
+        </div>
+        <div class="fg">
+          <label>Página White 🛡️</label>
+          <input id="f-white-page" type="url" placeholder="https://paginawhite.com"/>
+        </div>
+        <div class="fg">
+          <label>Página Original 🎯</label>
+          <input id="f-offer-page" type="url" placeholder="https://oferta-real.com"/>
+        </div>
       </div>
     </div>
     <div class="modal-foot">
@@ -1334,6 +1367,19 @@ function openPanel(id) {
       <div class="dr"><span class="k">Descrição</span><span class="v" style="font-size:12px;color:var(--muted2)">${esc(STEPS[step]||'—')}</span></div>
     </div>
     ${a.notes?`<div class="ds"><h3>Observações</h3><p style="font-size:13px;line-height:1.6;color:var(--muted2)">${esc(a.notes)}</p></div>`:''}
+    ${(a.bizName||a.bizUrl||a.bizPhone||a.bizAddress||a.whitePage||a.offerPage)?`
+    <div class="ds">
+      <h3>Informações da Empresa</h3>
+      ${a.bizName?`<div class="dr"><span class="k">Empresa</span><span class="v">${esc(a.bizName)}</span></div>`:''}
+      ${a.bizUrl?`<div class="dr"><span class="k">URL</span><span class="v"><a href="${esc(a.bizUrl)}" target="_blank" style="color:var(--teal);text-decoration:none;font-size:12px">${esc(a.bizUrl)}</a><button class="copy-btn" onclick="copy('${esc(a.bizUrl)}','URL copiada!')">Copiar</button></span></div>`:''}
+      ${a.bizPhone?`<div class="dr"><span class="k">Telefone</span><span class="v">${esc(a.bizPhone)}<button class="copy-btn" onclick="copy('${esc(a.bizPhone)}','Copiado!')">Copiar</button></span></div>`:''}
+      ${a.bizAddress?`<div class="dr"><span class="k">Endereço</span><span class="v" style="font-size:12px">${esc(a.bizAddress)}</span></div>`:''}
+    </div>
+    <div class="ds">
+      <h3>Cloacker</h3>
+      ${a.whitePage?`<div class="dr"><span class="k">🛡️ Página White</span><span class="v"><a href="${esc(a.whitePage)}" target="_blank" style="color:var(--muted2);text-decoration:none;font-size:12px">${esc(a.whitePage)}</a><button class="copy-btn" onclick="copy('${esc(a.whitePage)}','URL copiada!')">Copiar</button></span></div>`:''}
+      ${a.offerPage?`<div class="dr"><span class="k">🎯 Página Original</span><span class="v"><a href="${esc(a.offerPage)}" target="_blank" style="color:var(--teal);text-decoration:none;font-size:12px">${esc(a.offerPage)}</a><button class="copy-btn" onclick="copy('${esc(a.offerPage)}','URL copiada!')">Copiar</button></span></div>`:''}
+    </div>`:''}
     <div class="ds">
       <h3>Datas</h3>
       <div class="dr"><span class="k">Criada</span><span class="v" style="font-size:12px;color:var(--muted)">${fmt(a.createdAt)}</span></div>
@@ -1386,12 +1432,18 @@ function openModal(id, defaultStatus) {
       document.getElementById('f-status').value = a.status||'farming';
       document.getElementById('f-step').value = a.warmingStep||'0';
       document.getElementById('f-notes').value = a.notes||'';
+      document.getElementById('f-biz-name').value = a.bizName||'';
+      document.getElementById('f-biz-url').value = a.bizUrl||'';
+      document.getElementById('f-biz-phone').value = a.bizPhone||'';
+      document.getElementById('f-biz-address').value = a.bizAddress||'';
+      document.getElementById('f-white-page').value = a.whitePage||'';
+      document.getElementById('f-offer-page').value = a.offerPage||'';
       initCountryPicker(cCode);
       updateNamePreview();
     }
   } else {
     document.getElementById('f-acct-num').value = '';
-    ['f-email','f-pass','f-rec-email','f-pixel','f-domain','f-proxy','f-notes'].forEach(id => document.getElementById(id).value='');
+    ['f-email','f-pass','f-rec-email','f-pixel','f-domain','f-proxy','f-notes','f-biz-name','f-biz-url','f-biz-phone','f-biz-address','f-white-page','f-offer-page'].forEach(id => document.getElementById(id).value='');
     document.getElementById('f-step').value='0';
     document.getElementById('f-status').value = defaultStatus||'farming';
     initCountryPicker(null);
@@ -1427,6 +1479,12 @@ function saveAccount() {
     status: document.getElementById('f-status').value,
     warmingStep: document.getElementById('f-step').value,
     notes: document.getElementById('f-notes').value.trim(),
+    bizName: document.getElementById('f-biz-name').value.trim(),
+    bizUrl: document.getElementById('f-biz-url').value.trim(),
+    bizPhone: document.getElementById('f-biz-phone').value.trim(),
+    bizAddress: document.getElementById('f-biz-address').value.trim(),
+    whitePage: document.getElementById('f-white-page').value.trim(),
+    offerPage: document.getElementById('f-offer-page').value.trim(),
     updatedAt: new Date().toISOString(),
     createdAt: editId ? (DB.find(a=>a.id===editId)||{}).createdAt||new Date().toISOString() : new Date().toISOString(),
   };
