@@ -1911,11 +1911,11 @@ function fireEvent(i) {
     try {
       let params = {};
       if(ev.name === 'CompletePayment') {
-        params = { quantity: 1, content_type: 'product', currency: 'BRL', value: (Math.random() * 99 + 1).toFixed(2) };
+        params = { quantity: 1, content_type: 'product', currency: 'USD', value: (Math.random() * 99 + 1).toFixed(2) };
       } else if(ev.name === 'PlaceAnOrder') {
-        params = { currency: 'BRL', value: '75.00' };
+        params = { currency: 'USD', value: '75.00' };
       } else if(ev.name === 'ViewContent') {
-        params = { currency: 'BRL', value: '49.99' };
+        params = { currency: 'USD', value: '49.99' };
       }
       window.ttq.track(ev.name, params);
 
