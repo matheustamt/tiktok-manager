@@ -311,75 +311,86 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .country-chip .cc{font-size:10px;font-weight:600;color:var(--muted2);letter-spacing:.3px}
 
 /* ── TUTORIAL ── */
-.tut-layout{display:flex;height:calc(100vh - 56px);overflow:hidden}
-.tut-sidebar{
-  width:220px;flex-shrink:0;border-right:1px solid var(--border);
-  display:flex;flex-direction:column;background:var(--s1);
+.tut-layout{display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden}
+.tut-tabs-row{
+  display:flex;align-items:center;gap:6px;padding:10px 20px;
+  border-bottom:1px solid var(--border);background:var(--s1);
+  overflow-x:auto;flex-shrink:0;
 }
-.tut-sidebar-head{
-  padding:14px 14px 10px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
+.tut-tabs-row::-webkit-scrollbar{height:3px}.tut-tabs-row::-webkit-scrollbar-thumb{background:var(--border)}
+.tut-pill{
+  display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:20px;
+  font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;
+  border:1px solid var(--border);background:var(--s2);color:var(--muted2);
+  transition:all .15s;flex-shrink:0;
 }
-.tut-sidebar-head span{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-.tut-sidebar-list{flex:1;overflow-y:auto;padding:6px}
-.tut-item{
-  display:flex;align-items:center;gap:8px;padding:9px 10px;
-  border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted2);
-  transition:all .15s;border:1px solid transparent;
+.tut-pill:hover{color:var(--text);border-color:var(--border2)}
+.tut-pill.active{color:var(--text);border-color:transparent;box-shadow:0 0 0 1.5px var(--teal)}
+.tut-pill-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tut-pill-del{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:0 0 0 2px;display:flex;line-height:1;opacity:.5;transition:opacity .15s;
 }
-.tut-item:hover{background:var(--s2);color:var(--text)}
-.tut-item.active{background:var(--s2);color:var(--text);border-color:var(--border)}
-.tut-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tut-item-del{
-  opacity:0;background:none;border:none;color:var(--danger);cursor:pointer;
-  padding:2px;border-radius:4px;flex-shrink:0;display:flex;transition:opacity .15s;
+.tut-pill-del:hover{opacity:1;color:var(--danger)}
+.tut-add-pill{
+  display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;
+  font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  border:1.5px dashed var(--border);background:none;color:var(--muted);
+  transition:all .15s;
 }
-.tut-item:hover .tut-item-del{opacity:1}
-.tut-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.tut-toolbar{
-  padding:12px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;flex-shrink:0;
+.tut-add-pill:hover{border-color:var(--teal);color:var(--teal)}
+.tut-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.tut-head{
+  padding:16px 24px 12px;display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
 }
-.tut-method-name{
-  flex:1;background:none;border:none;color:var(--text);font-size:15px;
-  font-weight:600;outline:none;padding:2px 6px;border-radius:6px;
+.tut-dot-lg{width:36px;height:36px;border-radius:10px;flex-shrink:0}
+.tut-name-input{
+  flex:1;background:none;border:none;color:var(--text);font-size:18px;
+  font-weight:700;outline:none;padding:3px 8px;border-radius:8px;
   transition:background .15s;
 }
-.tut-method-name:focus{background:var(--s2)}
-.tut-tab-bar{display:flex;gap:4px;padding:10px 20px 0;flex-shrink:0}
-.tut-tab{
-  padding:6px 14px;border-radius:7px 7px 0 0;font-size:12px;font-weight:500;
-  color:var(--muted);cursor:pointer;border:none;background:none;
-  border:1px solid transparent;border-bottom:none;transition:all .15s;
+.tut-name-input:focus{background:var(--s2)}
+.tut-seg{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:2px;gap:2px}
+.tut-seg-btn{
+  padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;
+  border:none;background:none;color:var(--muted);cursor:pointer;transition:all .15s;
 }
-.tut-tab.active{background:var(--s2);color:var(--text);border-color:var(--border)}
-.tut-panel{flex:1;overflow-y:auto;padding:20px;border-top:1px solid var(--border)}
+.tut-seg-btn.active{background:var(--s3);color:var(--text)}
+.tut-content{flex:1;overflow-y:auto;padding:20px 24px}
 .tut-textarea{
-  width:100%;height:100%;min-height:300px;background:var(--s2);
-  border:1px solid var(--border);border-radius:10px;color:var(--text);
-  font-size:13px;line-height:1.7;padding:14px;outline:none;resize:none;
+  width:100%;min-height:360px;height:calc(100% - 52px);
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  color:var(--text);font-size:13px;line-height:1.8;padding:16px 18px;
+  outline:none;resize:none;transition:border-color .15s;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  transition:border-color .15s;
 }
 .tut-textarea:focus{border-color:var(--teal)}
+.tut-save-bar{
+  display:flex;align-items:center;justify-content:flex-end;gap:10px;
+  padding:10px 0 0;
+}
 .tut-preview{
-  white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text);
-  background:var(--s2);border:1px solid var(--border);border-radius:10px;
-  padding:16px;min-height:200px;
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  padding:18px;white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text);
 }
 .tut-upload-zone{
-  border:2px dashed var(--border);border-radius:10px;padding:32px;
-  text-align:center;cursor:pointer;transition:all .15s;
+  border:2px dashed var(--border);border-radius:12px;padding:48px 32px;
+  text-align:center;cursor:pointer;transition:all .2s;display:block;
 }
-.tut-upload-zone:hover{border-color:var(--teal);background:rgba(37,244,238,.03)}
+.tut-upload-zone:hover{border-color:var(--teal);background:rgba(37,244,238,.04)}
 .tut-file-card{
-  display:flex;align-items:center;gap:12px;padding:12px 16px;
-  background:var(--s2);border:1px solid var(--border);border-radius:10px;
-  margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;
 }
 .tut-empty{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;gap:10px;color:var(--muted);text-align:center;padding:40px;
+  flex:1;gap:12px;color:var(--muted);text-align:center;padding:60px 40px;
+}
+.tut-empty-icon{
+  width:72px;height:72px;border-radius:20px;background:var(--s2);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  margin-bottom:4px;
 }
 
 /* ── ADD COL BTN ── */
@@ -1660,62 +1671,71 @@ let tutMethods  = [];
 let tutActiveId = null;
 let tutActiveTab = 'editor'; // 'editor' | 'file'
 
+const TUT_COLORS = ['#25f4ee','#fe2c55','#a855f7','#f59e0b','#22c55e','#3b82f6','#ec4899','#14b8a6'];
+function tutColor(id) { const h = id.split('').reduce((a,c)=>a+c.charCodeAt(0),0); return TUT_COLORS[h % TUT_COLORS.length]; }
+
 function renderTutorial() {
   if (!currentUser) return;
   const root = document.getElementById('tutorial-root');
   const active = tutMethods.find(m => m.id === tutActiveId) || null;
 
-  const sidebarItems = tutMethods.map(m => `
-    <div class="tut-item${m.id === tutActiveId ? ' active' : ''}" onclick="tutSelect('${m.id}')">
-      <span class="tut-item-name">${esc(m.name)}</span>
-      <button class="tut-item-del" onclick="event.stopPropagation();tutDelete('${m.id}')" title="Deletar">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-      </button>
-    </div>`).join('');
+  const pills = tutMethods.map(m => {
+    const col = tutColor(m.id);
+    const isActive = m.id === tutActiveId;
+    return `<div class="tut-pill${isActive?' active':''}" onclick="tutSelect('${m.id}')" style="${isActive?`box-shadow:0 0 0 1.5px ${col}`:''}">
+      <span class="tut-pill-dot" style="background:${col}"></span>
+      <span>${esc(m.name)}</span>
+      <button class="tut-pill-del" onclick="event.stopPropagation();tutDelete('${m.id}')" title="Deletar">✕</button>
+    </div>`;
+  }).join('');
 
-  let mainContent = '';
+  let bodyHtml = '';
   if (!active) {
-    mainContent = `<div class="tut-empty">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <div style="font-size:14px;font-weight:600;color:var(--muted2)">Nenhum método criado</div>
-      <div style="font-size:12px">Clique em <strong>+ Novo</strong> para criar seu primeiro método de farming</div>
+    bodyHtml = `<div class="tut-empty">
+      <div class="tut-empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--muted2)">Sem métodos de farming</div>
+      <div style="font-size:13px;line-height:1.6;max-width:320px">Crie um método para cada tipo de conta que você opera — ex: <em>Farming USA</em>, <em>Farming França</em>.</div>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="tutNew()">+ Criar primeiro método</button>
     </div>`;
   } else {
-    const editorPanel = tutActiveTab === 'editor'
-      ? `<div style="display:flex;flex-direction:column;height:100%;gap:12px">
-          <textarea class="tut-textarea" id="tut-editor-text" placeholder="Descreva o passo a passo do seu método de farming aqui..."
-            oninput="tutMarkDirty()">${esc(active.content || '')}</textarea>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-primary btn-sm" onclick="tutSave()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Salvar
-            </button>
-            <span id="tut-dirty-hint" style="font-size:11px;color:var(--muted);align-self:center;display:none">Alterações não salvas</span>
-          </div>
+    const col = tutColor(active.id);
+    const editorContent = tutActiveTab === 'editor'
+      ? `<textarea class="tut-textarea" id="tut-editor-text" placeholder="Descreva o passo a passo do seu método de farming aqui...&#10;&#10;Ex:&#10;Dia 1 — Assistir 10 vídeos na categoria X&#10;Dia 2 — Adicionar cartão...&#10;" oninput="tutMarkDirty()" style="min-height:240px;height:auto">${esc(active.content || '')}</textarea>
+        <div class="tut-save-bar">
+          <span id="tut-dirty-hint" style="font-size:11px;color:var(--muted);display:none">● Alterações não salvas</span>
+          <button class="btn btn-primary btn-sm" onclick="tutSave()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Salvar
+          </button>
         </div>`
       : tutFilePanel(active);
 
-    mainContent = `
-      <div class="tut-toolbar">
-        <input class="tut-method-name" id="tut-name-input" value="${esc(active.name)}"
+    bodyHtml = `
+      <div class="tut-head">
+        <div class="tut-dot-lg" style="background:${col}22;border:1.5px solid ${col}44;display:flex;align-items:center;justify-content:center">
+          <div style="width:12px;height:12px;border-radius:50%;background:${col}"></div>
+        </div>
+        <input class="tut-name-input" id="tut-name-input" value="${esc(active.name)}"
           placeholder="Nome do método..." onblur="tutRenameCurrent()" onkeydown="if(event.key==='Enter')this.blur()"/>
+        <div class="tut-seg">
+          <button class="tut-seg-btn${tutActiveTab==='editor'?' active':''}" onclick="tutSetTab('editor')">✏️ Editor</button>
+          <button class="tut-seg-btn${tutActiveTab==='file'?' active':''}" onclick="tutSetTab('file')">📎 Arquivo</button>
+        </div>
       </div>
-      <div class="tut-tab-bar">
-        <button class="tut-tab${tutActiveTab==='editor'?' active':''}" onclick="tutSetTab('editor')">✏️ Editor</button>
-        <button class="tut-tab${tutActiveTab==='file'?' active':''}" onclick="tutSetTab('file')">📎 Arquivo</button>
-      </div>
-      <div class="tut-panel">${editorPanel}</div>`;
+      <div class="tut-content">${editorContent}</div>`;
   }
 
   root.innerHTML = `<div class="tut-layout">
-    <div class="tut-sidebar">
-      <div class="tut-sidebar-head">
-        <span>Métodos</span>
-        <button class="btn btn-primary btn-sm" onclick="tutNew()" style="padding:4px 10px;font-size:11px">+ Novo</button>
-      </div>
-      <div class="tut-sidebar-list">${sidebarItems}</div>
+    <div class="tut-tabs-row">
+      ${pills}
+      <button class="tut-add-pill" onclick="tutNew()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo método
+      </button>
     </div>
-    <div class="tut-main">${mainContent}</div>
+    <div class="tut-body">${bodyHtml}</div>
   </div>`;
 }
 
@@ -1723,30 +1743,31 @@ function tutFilePanel(m) {
   if (m.file) {
     const isText = m.file.type === 'text/plain';
     const isPdf  = m.file.type === 'application/pdf';
+    const ext    = m.file.name.split('.').pop().toUpperCase();
     return `
       <div class="tut-file-card">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div style="width:36px;height:36px;border-radius:8px;background:rgba(37,244,238,.1);border:1px solid rgba(37,244,238,.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--teal);flex-shrink:0">${ext}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.file.name)}</div>
-          <div style="font-size:11px;color:var(--muted)">${m.file.type}</div>
+          <div style="font-size:11px;color:var(--muted)">Arquivo carregado</div>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="tutRemoveFile()">Remover</button>
       </div>
       ${isPdf
-        ? `<iframe src="${m.file.data}" style="width:100%;height:calc(100vh - 280px);border:none;border-radius:8px"></iframe>`
+        ? `<iframe src="${m.file.data}" style="width:100%;height:calc(100vh - 320px);border:none;border-radius:10px;background:#fff"></iframe>`
         : isText
         ? `<div class="tut-preview">${esc(m.file.textContent || '')}</div>`
-        : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">
-            Pré-visualização não disponível para este formato.<br/>
-            <a href="${m.file.data}" download="${esc(m.file.name)}" style="color:var(--teal);text-decoration:none;font-weight:500;margin-top:8px;display:inline-block">⬇ Baixar arquivo</a>
+        : `<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px;background:var(--s1);border:1px solid var(--border);border-radius:12px">
+            Pré-visualização não disponível para <strong>.${ext}</strong>.<br/>
+            <a href="${m.file.data}" download="${esc(m.file.name)}" style="color:var(--teal);text-decoration:none;font-weight:500;margin-top:10px;display:inline-block">⬇ Baixar arquivo</a>
           </div>`
       }`;
   }
   return `
-    <label class="tut-upload-zone" for="tut-file-input" style="display:block">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4;margin:0 auto 10px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      <div style="font-size:13px;font-weight:500;color:var(--muted2);margin-bottom:4px">Clique para fazer upload</div>
-      <div style="font-size:11px;color:var(--muted)">.txt · .pdf · .docx — máx. 700KB</div>
+    <label class="tut-upload-zone" for="tut-file-input">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3;margin:0 auto 12px;display:block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-size:14px;font-weight:600;color:var(--muted2);margin-bottom:6px">Arraste ou clique para fazer upload</div>
+      <div style="font-size:12px;color:var(--muted)">.txt · .pdf · .docx — máx. 700 KB</div>
     </label>
     <input type="file" id="tut-file-input" accept=".txt,.pdf,.docx,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       style="display:none" onchange="tutHandleFile(event)"/>`;
