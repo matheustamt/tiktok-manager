@@ -311,45 +311,76 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .country-chip .cc{font-size:10px;font-weight:600;color:var(--muted2);letter-spacing:.3px}
 
 /* ── TUTORIAL ── */
-.tutorial-wrap{padding:20px 24px;max-width:960px}
-.tutorial-header{margin-bottom:28px}
-.tutorial-header h1{font-size:20px;font-weight:700;margin-bottom:6px}
-.tutorial-header p{font-size:13px;color:var(--muted);line-height:1.6}
-.tutorial-days{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px}
-.tday{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.tday-head{
-  padding:16px 20px;display:flex;align-items:center;gap:14px;
-  border-bottom:1px solid var(--border);
+.tut-layout{display:flex;height:calc(100vh - 56px);overflow:hidden}
+.tut-sidebar{
+  width:220px;flex-shrink:0;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;background:var(--s1);
 }
-.tday-number{
-  width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
-  justify-content:center;font-size:22px;flex-shrink:0;
+.tut-sidebar-head{
+  padding:14px 14px 10px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
 }
-.tday-meta{flex:1}
-.tday-meta h2{font-size:15px;font-weight:700;margin-bottom:2px}
-.tday-meta p{font-size:12px;color:var(--muted);line-height:1.4}
-.tday-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
-.tday-body{padding:16px 20px}
-.coming-soon{
-  display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;
-  text-align:center;color:var(--muted);font-size:12px;
-  border:2px dashed var(--border);border-radius:8px;
+.tut-sidebar-head span{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.tut-sidebar-list{flex:1;overflow-y:auto;padding:6px}
+.tut-item{
+  display:flex;align-items:center;gap:8px;padding:9px 10px;
+  border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted2);
+  transition:all .15s;border:1px solid transparent;
 }
-.coming-soon svg{width:28px;height:28px;opacity:.3}
-.tstep-list{display:flex;flex-direction:column;gap:6px}
-.tstep{
-  display:flex;align-items:flex-start;gap:10px;padding:10px 12px;
-  background:var(--s2);border:1px solid var(--border);border-radius:8px;
-  font-size:13px;line-height:1.5;
+.tut-item:hover{background:var(--s2);color:var(--text)}
+.tut-item.active{background:var(--s2);color:var(--text);border-color:var(--border)}
+.tut-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tut-item-del{
+  opacity:0;background:none;border:none;color:var(--danger);cursor:pointer;
+  padding:2px;border-radius:4px;flex-shrink:0;display:flex;transition:opacity .15s;
 }
-.tstep-num{
-  width:22px;height:22px;border-radius:50%;background:var(--s3);
-  color:var(--muted2);font-size:11px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+.tut-item:hover .tut-item-del{opacity:1}
+.tut-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tut-toolbar{
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
 }
-.tstep-text{flex:1;color:var(--text)}
-.tstep-note{font-size:11px;color:var(--muted);margin-top:3px}
-.tday-footer{padding:10px 20px 14px;display:flex;justify-content:flex-end}
+.tut-method-name{
+  flex:1;background:none;border:none;color:var(--text);font-size:15px;
+  font-weight:600;outline:none;padding:2px 6px;border-radius:6px;
+  transition:background .15s;
+}
+.tut-method-name:focus{background:var(--s2)}
+.tut-tab-bar{display:flex;gap:4px;padding:10px 20px 0;flex-shrink:0}
+.tut-tab{
+  padding:6px 14px;border-radius:7px 7px 0 0;font-size:12px;font-weight:500;
+  color:var(--muted);cursor:pointer;border:none;background:none;
+  border:1px solid transparent;border-bottom:none;transition:all .15s;
+}
+.tut-tab.active{background:var(--s2);color:var(--text);border-color:var(--border)}
+.tut-panel{flex:1;overflow-y:auto;padding:20px;border-top:1px solid var(--border)}
+.tut-textarea{
+  width:100%;height:100%;min-height:300px;background:var(--s2);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-size:13px;line-height:1.7;padding:14px;outline:none;resize:none;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  transition:border-color .15s;
+}
+.tut-textarea:focus{border-color:var(--teal)}
+.tut-preview{
+  white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text);
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:16px;min-height:200px;
+}
+.tut-upload-zone{
+  border:2px dashed var(--border);border-radius:10px;padding:32px;
+  text-align:center;cursor:pointer;transition:all .15s;
+}
+.tut-upload-zone:hover{border-color:var(--teal);background:rgba(37,244,238,.03)}
+.tut-file-card{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  margin-bottom:14px;
+}
+.tut-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:10px;color:var(--muted);text-align:center;padding:40px;
+}
 
 /* ── ADD COL BTN ── */
 .add-col-btn{
@@ -1007,6 +1038,13 @@ window._fb = {
     const profiles  = pSnap.docs.map(d => d.data());
     const accounts  = aSnap.docs.map(d => d.data());
     return profiles.map(p => ({ p, accounts: accounts.filter(a => a.profileId === p.id) }));
+  },
+  async getTutorials(profileId) {
+    const snap = await getDoc(doc(_db, 'tutorials', profileId));
+    return snap.exists() ? (snap.data().methods || []) : [];
+  },
+  async saveTutorials(profileId, methods) {
+    await setDoc(doc(_db, 'tutorials', profileId), { methods });
   }
 };
 window.dispatchEvent(new Event('fbReady'));
@@ -1618,88 +1656,193 @@ function toggleInput(id, btn) {
 }
 
 // ─── TUTORIAL ────────────────────────────────────────────────────────────────
-const TUTORIAL_DAYS = [
-  {
-    num: 1,
-    icon: '🌱',
-    label: 'Dia 1 — Farming',
-    subtitle: 'Processo de farming das contas do zero',
-    color: '#6e6e90',
-    badge: { text: 'Etapa 1/4', cls: 'card-tag-gray' },
-    steps: null, // a ser preenchido
-  },
-  {
-    num: 2,
-    icon: '💳',
-    label: 'Dia 2 — Cartão de Crédito',
-    subtitle: 'Adicionar cartão de crédito à conta de anúncios',
-    color: '#3b82f6',
-    badge: { text: 'Etapa 2/4', cls: 'card-tag-blue' },
-    steps: null,
-  },
-  {
-    num: 3,
-    icon: '📢',
-    label: 'Dia 3 — Campanha de Reach + Pixel',
-    subtitle: 'Subir campanha reach ($5), pausar e criar pixel',
-    color: '#f59e0b',
-    badge: { text: 'Etapa 3/4', cls: 'card-tag-yellow' },
-    steps: null,
-  },
-  {
-    num: 4,
-    icon: '🚀',
-    label: 'Dia 4 — Conta Pronta para Conversão',
-    subtitle: 'Conta aquecida e pronta para rodar campanhas de performance',
-    color: '#22c55e',
-    badge: { text: 'Etapa 4/4', cls: 'card-tag-green' },
-    steps: null,
-  },
-];
+let tutMethods  = [];
+let tutActiveId = null;
+let tutActiveTab = 'editor'; // 'editor' | 'file'
 
 function renderTutorial() {
+  if (!currentUser) return;
   const root = document.getElementById('tutorial-root');
+  const active = tutMethods.find(m => m.id === tutActiveId) || null;
 
-  const daysHtml = TUTORIAL_DAYS.map(day => {
-    const bodyHtml = day.steps && day.steps.length
-      ? `<div class="tstep-list">${day.steps.map((s,i) => `
-          <div class="tstep">
-            <div class="tstep-num">${i+1}</div>
-            <div>
-              <div class="tstep-text">${esc(s.text)}</div>
-              ${s.note?`<div class="tstep-note">${esc(s.note)}</div>`:''}
-            </div>
-          </div>`).join('')}</div>`
-      : `<div class="coming-soon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          <strong style="color:var(--muted2)">Tutorial em breve</strong>
-          <span>O passo a passo detalhado deste dia<br/>será adicionado em breve.</span>
-        </div>`;
+  const sidebarItems = tutMethods.map(m => `
+    <div class="tut-item${m.id === tutActiveId ? ' active' : ''}" onclick="tutSelect('${m.id}')">
+      <span class="tut-item-name">${esc(m.name)}</span>
+      <button class="tut-item-del" onclick="event.stopPropagation();tutDelete('${m.id}')" title="Deletar">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>`).join('');
 
-    return `<div class="tday">
-      <div class="tday-head">
-        <div class="tday-number" style="background:${day.color}22;font-size:22px">${day.icon}</div>
-        <div class="tday-meta">
-          <h2>${day.label}</h2>
-          <p>${day.subtitle}</p>
-        </div>
-        <span class="tday-badge card-tag ${day.badge.cls}">${day.badge.text}</span>
-      </div>
-      <div class="tday-body">${bodyHtml}</div>
+  let mainContent = '';
+  if (!active) {
+    mainContent = `<div class="tut-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div style="font-size:14px;font-weight:600;color:var(--muted2)">Nenhum método criado</div>
+      <div style="font-size:12px">Clique em <strong>+ Novo</strong> para criar seu primeiro método de farming</div>
     </div>`;
-  }).join('');
+  } else {
+    const editorPanel = tutActiveTab === 'editor'
+      ? `<div style="display:flex;flex-direction:column;height:100%;gap:12px">
+          <textarea class="tut-textarea" id="tut-editor-text" placeholder="Descreva o passo a passo do seu método de farming aqui..."
+            oninput="tutMarkDirty()">${esc(active.content || '')}</textarea>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="tutSave()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Salvar
+            </button>
+            <span id="tut-dirty-hint" style="font-size:11px;color:var(--muted);align-self:center;display:none">Alterações não salvas</span>
+          </div>
+        </div>`
+      : tutFilePanel(active);
 
-  root.innerHTML = `<div class="tutorial-wrap">
-    <div class="tutorial-header">
-      <h1>Tutorial — Cronograma de Aquecimento</h1>
-      <p>Passo a passo completo do processo de aquecimento das contas TikTok Ads em 4 dias.<br/>
-      Os detalhes de cada etapa serão adicionados conforme o processo for documentado.</p>
+    mainContent = `
+      <div class="tut-toolbar">
+        <input class="tut-method-name" id="tut-name-input" value="${esc(active.name)}"
+          placeholder="Nome do método..." onblur="tutRenameCurrent()" onkeydown="if(event.key==='Enter')this.blur()"/>
+      </div>
+      <div class="tut-tab-bar">
+        <button class="tut-tab${tutActiveTab==='editor'?' active':''}" onclick="tutSetTab('editor')">✏️ Editor</button>
+        <button class="tut-tab${tutActiveTab==='file'?' active':''}" onclick="tutSetTab('file')">📎 Arquivo</button>
+      </div>
+      <div class="tut-panel">${editorPanel}</div>`;
+  }
+
+  root.innerHTML = `<div class="tut-layout">
+    <div class="tut-sidebar">
+      <div class="tut-sidebar-head">
+        <span>Métodos</span>
+        <button class="btn btn-primary btn-sm" onclick="tutNew()" style="padding:4px 10px;font-size:11px">+ Novo</button>
+      </div>
+      <div class="tut-sidebar-list">${sidebarItems}</div>
     </div>
-    <div class="tutorial-days">${daysHtml}</div>
+    <div class="tut-main">${mainContent}</div>
   </div>`;
+}
+
+function tutFilePanel(m) {
+  if (m.file) {
+    const isText = m.file.type === 'text/plain';
+    const isPdf  = m.file.type === 'application/pdf';
+    return `
+      <div class="tut-file-card">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.file.name)}</div>
+          <div style="font-size:11px;color:var(--muted)">${m.file.type}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="tutRemoveFile()">Remover</button>
+      </div>
+      ${isPdf
+        ? `<iframe src="${m.file.data}" style="width:100%;height:calc(100vh - 280px);border:none;border-radius:8px"></iframe>`
+        : isText
+        ? `<div class="tut-preview">${esc(m.file.textContent || '')}</div>`
+        : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">
+            Pré-visualização não disponível para este formato.<br/>
+            <a href="${m.file.data}" download="${esc(m.file.name)}" style="color:var(--teal);text-decoration:none;font-weight:500;margin-top:8px;display:inline-block">⬇ Baixar arquivo</a>
+          </div>`
+      }`;
+  }
+  return `
+    <label class="tut-upload-zone" for="tut-file-input" style="display:block">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.4;margin:0 auto 10px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-size:13px;font-weight:500;color:var(--muted2);margin-bottom:4px">Clique para fazer upload</div>
+      <div style="font-size:11px;color:var(--muted)">.txt · .pdf · .docx — máx. 700KB</div>
+    </label>
+    <input type="file" id="tut-file-input" accept=".txt,.pdf,.docx,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      style="display:none" onchange="tutHandleFile(event)"/>`;
+}
+
+function tutNew() {
+  const m = { id: uid(), name: 'Novo Método', content: '', file: null };
+  tutMethods.push(m);
+  tutActiveId = m.id;
+  tutActiveTab = 'editor';
+  renderTutorial();
+  tutSave();
+  setTimeout(() => {
+    const inp = document.getElementById('tut-name-input');
+    if (inp) { inp.focus(); inp.select(); }
+  }, 80);
+}
+
+function tutSelect(id) {
+  tutActiveId = id;
+  tutActiveTab = 'editor';
+  renderTutorial();
+}
+
+function tutSetTab(tab) {
+  tutActiveTab = tab;
+  renderTutorial();
+}
+
+function tutMarkDirty() {
+  const hint = document.getElementById('tut-dirty-hint');
+  if (hint) hint.style.display = 'inline';
+}
+
+function tutRenameCurrent() {
+  const inp = document.getElementById('tut-name-input');
+  if (!inp) return;
+  const m = tutMethods.find(x => x.id === tutActiveId);
+  if (!m) return;
+  const val = inp.value.trim() || 'Sem nome';
+  if (val === m.name) return;
+  m.name = val;
+  tutSave();
+  renderTutorial();
+}
+
+function tutSave() {
+  if (!currentUser) return;
+  const m = tutMethods.find(x => x.id === tutActiveId);
+  if (m) {
+    const ta = document.getElementById('tut-editor-text');
+    if (ta) m.content = ta.value;
+  }
+  window._fb.saveTutorials(currentUser.id, tutMethods).catch(console.error);
+  const hint = document.getElementById('tut-dirty-hint');
+  if (hint) { hint.textContent = '✓ Salvo'; setTimeout(() => { hint.style.display = 'none'; }, 1500); }
+  toast('Tutorial salvo!', 'success');
+}
+
+function tutDelete(id) {
+  const m = tutMethods.find(x => x.id === id);
+  if (!m || !confirm(`Deletar o método "${m.name}"?`)) return;
+  tutMethods = tutMethods.filter(x => x.id !== id);
+  if (tutActiveId === id) tutActiveId = tutMethods.length ? tutMethods[0].id : null;
+  window._fb.saveTutorials(currentUser.id, tutMethods).catch(console.error);
+  renderTutorial();
+}
+
+function tutRemoveFile() {
+  const m = tutMethods.find(x => x.id === tutActiveId);
+  if (!m) return;
+  m.file = null;
+  tutSave();
+  renderTutorial();
+}
+
+function tutHandleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 700 * 1024) { toast('Arquivo muito grande (máx. 700KB).', 'error'); return; }
+  const m = tutMethods.find(x => x.id === tutActiveId);
+  if (!m) return;
+  const reader = new FileReader();
+  if (file.type === 'text/plain') {
+    reader.onload = ev => {
+      m.file = { name: file.name, type: file.type, data: null, textContent: ev.target.result };
+      tutSave(); renderTutorial();
+    };
+    reader.readAsText(file);
+  } else {
+    reader.onload = ev => {
+      m.file = { name: file.name, type: file.type, data: ev.target.result, textContent: null };
+      tutSave(); renderTutorial();
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 // ─── COUNTRY PICKER ──────────────────────────────────────────────────────────
@@ -2269,11 +2412,17 @@ async function loadSession() {
 async function loginAs(profile) {
   currentUser = profile;
   sessionStorage.setItem('tt_session', JSON.stringify({ id: profile.id }));
-  DB = await window._fb.getAccounts(profile.id);
+  [DB, tutMethods] = await Promise.all([
+    window._fb.getAccounts(profile.id),
+    window._fb.getTutorials(profile.id)
+  ]);
+  tutActiveId = tutMethods.length ? tutMethods[0].id : null;
+  tutActiveTab = 'editor';
   dlHistory = JSON.parse(localStorage.getItem('tt_dl_hist_' + profile.id) || '[]');
   document.getElementById('profile-screen').style.display = 'none';
   renderTopbarUser();
   renderAll();
+  renderTutorial();
   dlRenderHistory();
   toast(`Bem-vindo, ${profile.name}!`, 'success');
 }
@@ -2661,7 +2810,6 @@ function adminToggleUser(idx) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-renderTutorial();
 async function _init() {
   const _savedSession = await loadSession();
   if (_savedSession) {
