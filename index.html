@@ -50,6 +50,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .btn-icon{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:5px;display:inline-flex;transition:color .15s}
 .btn-icon:hover{color:var(--teal)}
 .btn-danger{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.25)}.btn-danger:hover{background:rgba(239,68,68,.22)}
+.btn-link{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;transition:color .15s}.btn-link:hover{color:var(--text)}
 
 /* ── STATS PANEL ── */
 .stats-panel{
@@ -412,19 +413,35 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════
-     PROFILE SELECTION SCREEN
+     LOGIN SCREEN
 ═══════════════════════════════════════════════════════════ -->
 <div id="profile-screen">
-  <div style="max-width:540px;width:100%;padding:24px 20px">
-    <div style="text-align:center;margin-bottom:30px">
-      <div class="logo" style="font-size:22px;display:inline-block;margin-bottom:8px">TikTok Manager</div>
-      <div style="font-size:13px;color:var(--muted)">Selecione seu perfil para continuar</div>
+  <div style="max-width:380px;width:100%;padding:24px 20px">
+    <div style="text-align:center;margin-bottom:32px">
+      <div class="logo" style="font-size:24px;display:inline-block;margin-bottom:8px">TikTok Manager</div>
+      <div style="font-size:13px;color:var(--muted)">Faça login para continuar</div>
     </div>
-    <div id="profile-grid" class="profile-grid"></div>
-    <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="showNewProfModal()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Novo Usuário
-    </button>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="fg">
+        <label>Email</label>
+        <input id="login-email" type="email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div class="fg">
+        <label>Senha</label>
+        <div class="input-wrap">
+          <input id="login-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginSubmit()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+          <button type="button" class="reveal" onclick="toggleInput('login-pw',this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="login-err" style="display:none;font-size:12px;color:var(--danger);margin-top:-6px"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px" onclick="loginSubmit()">Entrar</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+        <button class="btn-link" onclick="showForgotModal()">Esqueci minha senha</button>
+        <button class="btn-link" onclick="showNewProfModal()">Criar conta</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -446,6 +463,49 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="cancelProfLogin()">Voltar</button>
       <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="confirmProfLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Forgot password modal -->
+<div class="prof-modal" id="forgot-modal">
+  <div class="prof-box" style="width:360px">
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px">Redefinir Senha</div>
+    <div id="forgot-step1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Informe o email da sua conta para redefinir a senha.</div>
+      <div class="fg" style="margin-bottom:8px">
+        <label>Email</label>
+        <input id="forgot-email" type="email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')forgotFindAccount()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div id="forgot-err" style="display:none;font-size:12px;color:var(--danger);margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeForgotModal()">Cancelar</button>
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="forgotFindAccount()">Continuar</button>
+      </div>
+    </div>
+    <div id="forgot-step2" style="display:none">
+      <div id="forgot-user-info" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px"></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="fg">
+          <label>Nova Senha *</label>
+          <div class="input-wrap">
+            <input id="forgot-pw" type="password" placeholder="Mínimo 4 caracteres" onkeydown="if(event.key==='Enter')document.getElementById('forgot-pw2').focus()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+            <button type="button" class="reveal" onclick="toggleInput('forgot-pw',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Confirmar Nova Senha *</label>
+          <div class="input-wrap">
+            <input id="forgot-pw2" type="password" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')forgotResetPassword()" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--text);font-size:13px;padding:9px 12px;outline:none" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+            <button type="button" class="reveal" onclick="toggleInput('forgot-pw2',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div id="forgot-err2" style="display:none;font-size:12px;color:var(--danger);margin-top:6px"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeForgotModal()">Cancelar</button>
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="forgotResetPassword()">Redefinir</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2186,7 +2246,6 @@ function dlRenderHistory() {
 
 // ─── PROFILES ────────────────────────────────────────────────────────────────
 let currentUser = null;
-let _profLoginTarget = null;
 
 async function loadSession() {
   const s = sessionStorage.getItem('tt_session');
@@ -2214,8 +2273,32 @@ function logout() {
   DB = [];
   dlHistory = [];
   closeUserMenu();
-  renderProfileGrid().catch(console.error);
+  showLoginScreen();
+}
+
+function showLoginScreen() {
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-err').style.display = 'none';
   document.getElementById('profile-screen').style.display = 'flex';
+  setTimeout(() => document.getElementById('login-email').focus(), 80);
+}
+
+async function loginSubmit() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw    = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('login-err');
+  errEl.style.display = 'none';
+  if (!email) { errEl.textContent = 'Informe o email.'; errEl.style.display = 'block'; return; }
+  if (!pw)    { errEl.textContent = 'Informe a senha.'; errEl.style.display = 'block'; return; }
+  errEl.textContent = 'Verificando...'; errEl.style.display = 'block'; errEl.style.color = 'var(--muted)';
+  const profiles = await window._fb.getProfiles();
+  const p = profiles.find(x => x.email.toLowerCase() === email.toLowerCase());
+  errEl.style.color = 'var(--danger)';
+  if (!p) { errEl.textContent = 'Email não encontrado.'; return; }
+  if (p.password !== pw) { errEl.textContent = 'Senha incorreta.'; document.getElementById('login-pw').value = ''; return; }
+  errEl.style.display = 'none';
+  await loginAs(p);
 }
 
 function renderTopbarUser() {
@@ -2275,75 +2358,62 @@ function closeUserMenu() {
 
 function switchProfile() {
   closeUserMenu();
-  renderProfileGrid().catch(console.error);
-  document.getElementById('profile-screen').style.display = 'flex';
+  showLoginScreen();
 }
 
-async function renderProfileGrid() {
-  const grid = document.getElementById('profile-grid');
-  if (!grid) return;
-  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--muted);font-size:13px">Carregando...</div>`;
+// ─── FORGOT PASSWORD ─────────────────────────────────────────────────────────
+let _forgotTarget = null;
+
+function showForgotModal() {
+  _forgotTarget = null;
+  document.getElementById('forgot-email').value = '';
+  document.getElementById('forgot-pw').value = '';
+  document.getElementById('forgot-pw2').value = '';
+  document.getElementById('forgot-err').style.display = 'none';
+  document.getElementById('forgot-err2').style.display = 'none';
+  document.getElementById('forgot-step1').style.display = 'block';
+  document.getElementById('forgot-step2').style.display = 'none';
+  document.getElementById('forgot-modal').classList.add('open');
+  setTimeout(() => document.getElementById('forgot-email').focus(), 80);
+}
+
+function closeForgotModal() {
+  document.getElementById('forgot-modal').classList.remove('open');
+}
+
+async function forgotFindAccount() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const errEl = document.getElementById('forgot-err');
+  errEl.style.display = 'none';
+  if (!email || !email.includes('@')) { errEl.textContent = 'Informe um email válido.'; errEl.style.display = 'block'; return; }
+  errEl.textContent = 'Buscando conta...'; errEl.style.color = 'var(--muted)'; errEl.style.display = 'block';
   const profiles = await window._fb.getProfiles();
-  if (!profiles.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--muted);font-size:13px">
-      Nenhum perfil criado ainda.<br/>Crie seu primeiro perfil abaixo.
-    </div>`;
-    return;
-  }
-  // Load account counts in parallel
-  const counts = await Promise.all(profiles.map(p => window._fb.getAccounts(p.id).then(a => a.length).catch(() => 0)));
-  grid.innerHTML = profiles.map((p, i) => {
-    const av = avatarColor(p.name);
-    const ini = initials(p.name);
-    const count = counts[i];
-    return `<div class="profile-card" onclick="selectProfile('${p.id}')">
-      <div class="profile-avatar-lg" style="background:${av};color:#0d0d12">${ini}</div>
-      <div class="profile-name-lg">${esc(p.name)}</div>
-      <div class="profile-count">${count} conta${count!==1?'s':''}</div>
-      ${p.password ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>` : ''}
-    </div>`;
-  }).join('');
+  const p = profiles.find(x => x.email.toLowerCase() === email.toLowerCase());
+  errEl.style.color = 'var(--danger)';
+  if (!p) { errEl.textContent = 'Nenhuma conta encontrada com esse email.'; return; }
+  errEl.style.display = 'none';
+  _forgotTarget = p;
+  const av = avatarColor(p.name);
+  const ini = initials(p.name);
+  document.getElementById('forgot-user-info').innerHTML = `
+    <div style="width:32px;height:32px;border-radius:50%;background:${av};color:#0d0d12;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+    <div><div style="font-size:13px;font-weight:500">${esc(p.name)}</div><div style="font-size:11px;color:var(--muted)">${esc(p.email)}</div></div>`;
+  document.getElementById('forgot-step1').style.display = 'none';
+  document.getElementById('forgot-step2').style.display = 'block';
+  setTimeout(() => document.getElementById('forgot-pw').focus(), 80);
 }
 
-async function selectProfile(id) {
-  const profiles = await window._fb.getProfiles();
-  const p = profiles.find(x => x.id === id);
-  if (!p) return;
-  if (p.password) {
-    _profLoginTarget = p;
-    const av = avatarColor(p.name);
-    const ini = initials(p.name);
-    const avEl = document.getElementById('prof-pw-avatar');
-    avEl.style.background = av;
-    avEl.style.color = '#0d0d12';
-    avEl.textContent = ini;
-    document.getElementById('prof-pw-name').textContent = p.name;
-    document.getElementById('prof-pw-input').value = '';
-    document.getElementById('prof-pw-err').style.display = 'none';
-    document.getElementById('prof-pw-modal').classList.add('open');
-    setTimeout(() => document.getElementById('prof-pw-input').focus(), 80);
-  } else {
-    await loginAs(p);
-  }
-}
-
-async function confirmProfLogin() {
-  if (!_profLoginTarget) return;
-  const pw = document.getElementById('prof-pw-input').value;
-  if (pw !== _profLoginTarget.password) {
-    document.getElementById('prof-pw-err').style.display = 'block';
-    document.getElementById('prof-pw-input').value = '';
-    document.getElementById('prof-pw-input').focus();
-    return;
-  }
-  document.getElementById('prof-pw-modal').classList.remove('open');
-  await loginAs(_profLoginTarget);
-  _profLoginTarget = null;
-}
-
-function cancelProfLogin() {
-  _profLoginTarget = null;
-  document.getElementById('prof-pw-modal').classList.remove('open');
+async function forgotResetPassword() {
+  const pw   = document.getElementById('forgot-pw').value;
+  const pw2  = document.getElementById('forgot-pw2').value;
+  const errEl = document.getElementById('forgot-err2');
+  errEl.style.display = 'none';
+  if (pw.length < 4) { errEl.textContent = 'Senha deve ter ao menos 4 caracteres.'; errEl.style.display = 'block'; return; }
+  if (pw !== pw2)    { errEl.textContent = 'As senhas não coincidem.'; errEl.style.display = 'block'; return; }
+  const updated = { ..._forgotTarget, password: pw };
+  await window._fb.saveProfile(updated);
+  closeForgotModal();
+  toast('Senha redefinida com sucesso!', 'success');
 }
 
 function showNewProfModal() {
@@ -2581,16 +2651,12 @@ function adminToggleUser(idx) {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 renderTutorial();
-// Show loading state until Firebase is ready
-document.getElementById('profile-grid').innerHTML =
-  `<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--muted);font-size:13px">Conectando...</div>`;
 async function _init() {
   const _savedSession = await loadSession();
   if (_savedSession) {
     await loginAs(_savedSession);
   } else {
-    await renderProfileGrid();
-    document.getElementById('profile-screen').style.display = 'flex';
+    showLoginScreen();
   }
 }
 window.addEventListener('fbReady', _init);
