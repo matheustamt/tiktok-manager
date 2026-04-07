@@ -1766,17 +1766,21 @@ function buildAccountName() {
 
 // ─── PIXEL ───────────────────────────────────────────────────────────────────
 const PX_EVENTS = [
-  { name: 'ViewContent',          label: 'Visualização de conteúdo',    icon: '👁️'  },
-  { name: 'Search',               label: 'Pesquisa',                    icon: '🔍'  },
   { name: 'AddToCart',            label: 'Adicionar ao carrinho',       icon: '🛒'  },
-  { name: 'AddPaymentInfo',       label: 'Informação de pagamento',     icon: '💳'  },
   { name: 'InitiateCheckout',     label: 'Iniciar checkout',            icon: '🏁'  },
-  { name: 'PlaceAnOrder',         label: 'Realizar pedido',             icon: '📦'  },
+  { name: 'AddPaymentInfo',       label: 'Informação de pagamento',     icon: '💳'  },
   { name: 'CompletePayment',      label: 'Pagamento completo',          icon: '💰'  },
   { name: 'CompleteRegistration', label: 'Registro completo',           icon: '✅'  },
   { name: 'Contact',              label: 'Contato',                     icon: '📞'  },
+  { name: 'CustomizeProduct',     label: 'Personalizar produto',        icon: '🎨'  },
+  { name: 'Download',             label: 'Download',                    icon: '⬇️'  },
+  { name: 'FindLocation',         label: 'Encontrar localização',       icon: '📍'  },
+  { name: 'PlaceAnOrder',         label: 'Realizar pedido',             icon: '📦'  },
+  { name: 'Schedule',             label: 'Agendar',                     icon: '📅'  },
+  { name: 'Search',               label: 'Pesquisa',                    icon: '🔍'  },
   { name: 'SubmitForm',           label: 'Envio de formulário',         icon: '📋'  },
   { name: 'Subscribe',            label: 'Inscrição',                   icon: '🔔'  },
+  { name: 'ViewContent',          label: 'Visualização de conteúdo',    icon: '👁️'  },
 ];
 
 let pxPixelId = null;
@@ -1835,13 +1839,17 @@ function setStatus(type, text) {
 
 function loadPixelScript() {
   return new Promise((resolve, reject) => {
-    if(window.ttq && pxLoaded) { resolve(); return; }
     setStatus('loading', 'Carregando script do TikTok...');
 
-    // Init ttq queue
+    // Always reset SDK so each activation fires for the correct pixel ID
+    document.querySelectorAll('script[src*="analytics.tiktok.com"]').forEach(s => s.remove());
+    delete window.ttq;
+    delete window.TiktokAnalyticsObject;
+
+    // Init fresh ttq queue
     !function(w,d,t){
       w.TiktokAnalyticsObject=t;
-      var ttq=w[t]=w[t]||[];
+      var ttq=w[t]=[];
       ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];
       ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
       for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
@@ -1852,7 +1860,7 @@ function loadPixelScript() {
         a.parentNode.insertBefore(o,a);
         ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};
         o.onload=function(){ pxLoaded=true; resolve(); };
-        o.onerror=function(){ reject(new Error('Falha ao carregar script')); };
+        o.onerror=function(){ reject(new Error('Falha ao carregar script do pixel. Verifique o ID.')); };
       };
     }(window, document, 'ttq');
 
@@ -1901,10 +1909,13 @@ function fireEvent(i) {
     rowEl.style.background = 'rgba(245,158,11,.04)';
 
     try {
-      const params = { event_id: 'ev_' + Date.now() + '_' + i };
-      if(ev.name === 'CompletePayment' || ev.name === 'PlaceAnOrder') {
-        params.value = (Math.random() * 100 + 1).toFixed(2);
-        params.currency = 'BRL';
+      let params = {};
+      if(ev.name === 'CompletePayment') {
+        params = { quantity: 1, content_type: 'product', currency: 'BRL', value: (Math.random() * 99 + 1).toFixed(2) };
+      } else if(ev.name === 'PlaceAnOrder') {
+        params = { currency: 'BRL', value: '75.00' };
+      } else if(ev.name === 'ViewContent') {
+        params = { currency: 'BRL', value: '49.99' };
       }
       window.ttq.track(ev.name, params);
 
